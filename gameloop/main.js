@@ -2,35 +2,34 @@ var ctx_font = "Consolas",
     ctx_fontsize = 10,
     ctx_backColor = "#777";
 
-// preload
-window.onload = function () {
+var game;
+var asset;
+
+var assetSource = {
+    img: {
+        img1: 'asset/1.jpg'
+    },
+    sound: {
+
+    }
+};
+
+function init() {
     console.log("PreLoad...");
+
     var assetCallback = (obj, count, total) => {
-        document.getElementsByTagName('h1')[0].innerHTML = `${Math.round(count / total * 100)}%`
+        document.getElementById('progressNum').innerHTML = `${Math.round(count / total * 100)}%`
 
         var pBar = document.getElementById('progress-bar');
-
         pBar.value = count / total;
         if (count == total) {
             console.log('Start');
             main();
         }
     }
-    asset = new assetLoader({
-        img: {
-            img1: 'asset/1.jpg'
-        },
-        sound: {
-            
-        }
-    }, assetCallback);
-    // main();
+
+    asset = new assetLoader(assetSource, assetCallback);
 }
-
-// ----------------------------------------------------------
-
-var game;
-var asset;
 
 function main() {
 
@@ -66,21 +65,9 @@ function draw(ctx) {
 
 }
 
-//----tool-------
-function toRadio(angle) {
-    return angle * Math.PI / 180;
-}
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    while (1)
-        if ((new Date().getTime() - start) > milliseconds)
-            break;
-}
 
 //---------------------
+
+window.onload = function () {
+    init();
+}
