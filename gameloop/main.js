@@ -23,7 +23,6 @@ function init() {
         var pBar = document.getElementById('progress-bar');
         pBar.value = count / total;
         if (count == total) {
-            console.log('Start');
             main();
         }
     }
@@ -32,6 +31,7 @@ function init() {
 }
 
 function main() {
+    console.log('Start');
 
     game = new Game({
         update: update,
@@ -43,18 +43,17 @@ function main() {
 var point = { x: 0, y: 50 };
 
 
-function update(dt) {
+function update(dt, tickcount) {
     // console.log(dt);
     point.x += dt * 100;
     if (point.x >= game.width) point.x = 0;
-
 }
 
 function draw(ctx) {
     ctx.fillStyle = ctx_backColor;
     ctx.fillRect(0, 0, game.width, game.height);
 
-    ctx.drawImage(asset.imgs.img1, 0, 0);
+    // ctx.drawImage(asset.imgs.img1, 0, 0);
 
     ctx.fillStyle = "#FFF";
     ctx.fillRect(point.x, point.y, 20, 20);
@@ -70,4 +69,12 @@ function draw(ctx) {
 
 window.onload = function () {
     init();
+}
+
+window.onblur = function () {
+    // console.log("blur:" + point.x);
+}
+
+window.onfocus = function () {
+    // console.log("focus:" + point.x);
 }

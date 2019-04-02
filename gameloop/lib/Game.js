@@ -24,24 +24,17 @@ class Game {
         // sitting input
         this.keys = {}
         this.mousePos = { x: 0, y: 0, isDown: false };
+        this.canvasRect = this.ctx.canvas.getBoundingClientRect();
         var canvas = this.ctx.canvas;
-        canvas.addEventListener("keydown", (e) => {
-            keys[e.keyCode] = true;
-        }, false);
-        canvas.addEventListener("keyup", (e) => {
-            delete keys[e.keyCode];
-        }, false);
-        canvas.addEventListener("mousedown", (e) => {
-            this.mousePos.isDown = true;
-        }, false);
-        canvas.addEventListener("mouseup", (e) => {
-            this.mousePos.isDown = false;
-        }, false);
+        canvas.addEventListener("keydown", (e) => keys[e.keyCode] = true, false);
+        canvas.addEventListener("keyup", (e) => delete keys[e.keyCode], false);
+        canvas.addEventListener("mousedown", (e) => this.mousePos.isDown = true, false);
+        canvas.addEventListener("mouseup", (e) => this.mousePos.isDown = false, false);
         canvas.addEventListener("mousemove", (e) => {
-            var rect = this.ctx.canvas.getBoundingClientRect();
-            this.mousePos.x = e.clientX - Math.floor(rect.left);
-            this.mousePos.y = e.clientY - Math.floor(rect.top);
-            // console.log(mousePos);
+            var rect = this.canvasRect;
+            // Math.floor(rect.left)
+            this.mousePos.x = e.clientX - rect.left;
+            this.mousePos.y = e.clientY - rect.top;
         }, false);
 
         // sitting loop
@@ -49,12 +42,8 @@ class Game {
         this.callback = callback;
 
         this.loop = new Timer({
-            update: (dt, tick) => {
-                callback.update(dt, tick)
-            },
-            render: () => {
-                callback.render(this.ctx)
-            }
+            update: (dt, tick) => callback.update(dt, tick),
+            render: () => callback.render(this.ctx)
         }, this.updateStep);
     }
 
@@ -68,7 +57,7 @@ function Timer(callback, step) {
     document.body.appendChild(stats.dom);
     stats.showPanel(0);
 
-    var timeNow = 0,
+    var rafID,
         lastTime = 0,
         accumulator = 0,
         tickcount = 0,
@@ -76,40 +65,112 @@ function Timer(callback, step) {
         isRunning = false,
         isStarted = false;
 
+    var fps = 60,
+        lastFpsUpdate = 0,
+        framesThisSecond = 0,
+        alpha = 0.25;
+
+    // timestamp 相當於 window.performance.now()
     function onFrame(timestamp) {
+        // console.log(timestamp)
         stats.begin();
-        accumulator += (timestamp - lastTime) / 1000;
+
+        if (isRunning) {
+            accumulator += (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+        }
+
+        // callback.begin()
+
+        // Runge Kutta order 4(RK4)，數值分析
+        // https://gafferongames.com/post/integration_basics/
+        if (timestamp > lastFpsUpdate + 1000) {
+            fps = alpha * framesThisSecond + (1 - alpha) * fps;
+            lastFpsUpdate = timestamp;
+            framesThisSecond = 0;
+            // console.log(fps);
+        }
+        framesThisSecond++;
+
+        // 用意就是讓update()以時間做為更新的依據
+        // 或是當物體移動距離大的時候，就需要提高update()更新的速度，以更精準檢測每次更新移動的距離
+        // 1000 px/s，在更新率20的狀況，相當於每次更新時移動50px
+        // 而更新率100的時候，相當於每次更新時只移動10px，自然能更加精準
+        var numUpdateSteps = 0;
         while (accumulator > stepTime && isRunning) {
             callback.update(stepTime, tickcount);
             tickcount++;
             accumulator -= stepTime;
+
+            // 當瀏覽器切窗時raf並不會更新，但切窗回來時timestamp卻還在累加，或是延遲發生時，做的應對處理
+            // numUpdateSteps相當於計數這幀更新了幾次，當落後太多的時候，就要執行修正
+            // 像是切窗之前 accumulator = 0,回來後變成1000，相當於落後1s
+            // 以stepTime:10ms來看下一幀就會需要跑100次來彌補，所以物體就會順移一段之類的
+            // 或是短時間大量update()導致下一幀也延遲，然後為了保持模擬又繼續while (accumulator > stepTime){...}
+            // 以此類推，最後導致卡死，所以再出現意外的時候需要修正
+            if (++numUpdateSteps >= 20) {
+                // panic()
+                break;
+            }
         }
 
-        lastTime = timestamp;
         callback.render();
 
+        // callback.end()
+
         stats.end();
-        if (isStarted) {
-            requestAnimationFrame(onFrame);
-        }
+
+        rafID = requestAnimationFrame(onFrame);
     }
+
+    function panic() {
+        // 而最簡單的修正方法就是將要追趕的accumulator重製
+        console.log('accumulator reset');
+        accumulator = 0;
+    }
+
     function start() {
+        if (isStarted) return;
         isRunning = true;
         isStarted = true;
-        requestAnimationFrame(onFrame);
+        reset();
+
+        rafID = requestAnimationFrame(onFrame);
     }
+
+    // 暫停update()，但繼續render()
     function pause() {
+        if (!isRunning) reset();
         isRunning = !isRunning;
     }
     function stop() {
         isRunning = false;
         isStarted = false;
+        cancelAnimationFrame(rafID);
+    }
+
+    function reset() {
+        // reset timestamp
+        lastTime = window.performance.now();
+        lastFpsUpdate = window.performance.now();
+        framesThisSecond = 0;
+    }
+    function FPS() {
+        return fps;
+    }
+    function getStatus() {
+        return {
+            isRunning: isRunning,
+            isStarted: isStarted
+        };
     }
 
     return {
         start: start,
         pause: pause,
-        stop: stop
+        stop: stop,
+        FPS: FPS,
+        status: getStatus()
     };
 }
 
