@@ -2,37 +2,36 @@ var ctx_font = "Consolas",
     ctx_fontsize = 10,
     ctx_backColor = "#777";
 
-// preload
-window.onload = function () {
-    console.log("PreLoad...");
-    var assetCallback = (obj, count, total) => {
-        document.getElementsByTagName('h1')[0].innerHTML = `${Math.round(count / total * 100)}%`
-
-        var pBar = document.getElementById('progress-bar');
-
-        pBar.value = count / total;
-        if (count == total) {
-            console.log('Start');
-            main();
-        }
-    }
-    asset = new assetLoader({
-        img: {
-            img1: 'asset/1.jpg'
-        },
-        sound: {
-            
-        }
-    }, assetCallback);
-    // main();
-}
-
-// ----------------------------------------------------------
-
 var game;
 var asset;
 
+var assetSource = {
+    img: {
+        img1: 'asset/1.jpg'
+    },
+    sound: {
+
+    }
+};
+
+function init() {
+    console.log("PreLoad...");
+
+    var assetCallback = (obj, count, total) => {
+        document.getElementById('progressNum').innerHTML = `${Math.round(count / total * 100)}%`
+
+        var pBar = document.getElementById('progress-bar');
+        pBar.value = count / total;
+        if (count == total) {
+            main();
+        }
+    }
+
+    asset = new assetLoader(assetSource, assetCallback);
+}
+
 function main() {
+    console.log('Start');
 
     game = new Game({
         update: update,
@@ -44,18 +43,17 @@ function main() {
 var point = { x: 0, y: 50 };
 
 
-function update(dt) {
+function update(dt, tickcount) {
     // console.log(dt);
     point.x += dt * 100;
     if (point.x >= game.width) point.x = 0;
-
 }
 
 function draw(ctx) {
     ctx.fillStyle = ctx_backColor;
     ctx.fillRect(0, 0, game.width, game.height);
 
-    ctx.drawImage(asset.imgs.img1, 0, 0);
+    // ctx.drawImage(asset.imgs.img1, 0, 0);
 
     ctx.fillStyle = "#FFF";
     ctx.fillRect(point.x, point.y, 20, 20);
@@ -66,21 +64,17 @@ function draw(ctx) {
 
 }
 
-//----tool-------
-function toRadio(angle) {
-    return angle * Math.PI / 180;
-}
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    while (1)
-        if ((new Date().getTime() - start) > milliseconds)
-            break;
-}
 
 //---------------------
+
+window.onload = function () {
+    init();
+}
+
+window.onblur = function () {
+    // console.log("blur:" + point.x);
+}
+
+window.onfocus = function () {
+    // console.log("focus:" + point.x);
+}
