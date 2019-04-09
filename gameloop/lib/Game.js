@@ -33,8 +33,8 @@ class Game {
         canvas.addEventListener("mousemove", (e) => {
             var rect = this.canvasRect;
             // Math.floor(rect.left)
-            this.mousePos.x = e.clientX - rect.left;
-            this.mousePos.y = e.clientY - rect.top;
+            this.mousePos.x = e.clientX - Math.floor(rect.left);
+            this.mousePos.y = e.clientY - Math.floor(rect.top);
         }, false);
 
         // sitting loop
@@ -43,7 +43,7 @@ class Game {
 
         this.loop = new Timer({
             update: (dt, tick) => callback.update(dt, tick),
-            render: () => callback.render(this.ctx)
+            render: (interp) => callback.render(this.ctx, interp)
         }, this.updateStep);
     }
 
@@ -64,7 +64,7 @@ function Timer(callback, step) {
         stepTime = step || 1 / 120,
         isRunning = false,
         isStarted = false;
-    
+
     var panicMax = 120;
 
     var defaultFPS = 60;
@@ -129,7 +129,8 @@ function Timer(callback, step) {
             }
         }
 
-        callback.render();
+        // interp  = accumulator / stepTime
+        callback.render(accumulator / stepTime);
 
         // callback.end()
 
