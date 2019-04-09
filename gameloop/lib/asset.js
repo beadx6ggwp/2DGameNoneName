@@ -20,7 +20,7 @@ class assetLoader {
         for (let img in this.imgs) {
             src = this.imgs[img];
             var _img = new Image();
-            _img.onload = (e) => self.loaded();
+            _img.onload = (e) => self.loaded(e);
             _img.onerror = (e) => console.log('load error:', e.srcElement);
             _img.src = src;
 
@@ -31,16 +31,16 @@ class assetLoader {
         for (let sound in this.sounds) {
             src = this.sounds[sound];
             var _sound = new Audio();
-            _sound.oncanplay = (e) => self.loaded();
+            _sound.oncanplay = (e) => self.loaded(e);
             _sound.onerror = (e) => console.log('load error:', e.srcElement);
             _sound.src = src;
             this.sounds[sound] = _sound;
         }
     }
-    loaded() {
+    loaded(e) {
         this.assetsLoaded++;
         if (this.callback) {
-            this.callback(this, this.assetsLoaded, this.totalAsset);
+            this.callback(e, this.assetsLoaded, this.totalAsset);
             return;
         }
 

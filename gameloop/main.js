@@ -22,6 +22,8 @@ function init() {
 
         var pBar = document.getElementById('progress-bar');
         pBar.value = count / total;
+
+        // console.log(Date.now() ,obj.path[0].src)
         if (count == total) {
             main();
         }
@@ -66,15 +68,14 @@ function draw(ctx) {
 
 
 //---------------------
-
-window.onload = function () {
-    init();
-}
+init();
 
 window.onblur = function () {
     // console.log("blur:" + point.x);
+    game.loop.pause()
 }
 
 window.onfocus = function () {
     // console.log("focus:" + point.x);
+    game.loop.pause()
 }
