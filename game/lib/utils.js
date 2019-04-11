@@ -15,3 +15,7 @@ function sleep(milliseconds) {
         if ((new Date().getTime() - start) > milliseconds)
             break;
 }
+function minsecms(){
+    var d = new Date();
+    return `${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`;
+}

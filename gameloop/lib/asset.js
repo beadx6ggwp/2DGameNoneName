@@ -1,6 +1,7 @@
 class assetLoader {
     constructor(asset, callback) {
         this.callback = callback;
+        this.isDone = false;
 
         this.imgs = asset['img'] || {};
         this.sounds = asset['sound'] || {};
@@ -11,8 +12,12 @@ class assetLoader {
         this.totalAsset = this.numImgs + this.numSounds;
 
         console.log(`numImgs:${this.numImgs}`, `numSounds:${this.numSounds}`);
-
-        this.run();
+        // console.log()
+        if (this.totalAsset != 0) {
+            this.run();
+        } else {
+            this.loaded(null);
+        }
     }
     run() {
         var self = this;
@@ -38,7 +43,9 @@ class assetLoader {
         }
     }
     loaded(e) {
-        this.assetsLoaded++;
+        if (this.totalAsset != 0)
+            this.assetsLoaded++;
+            
         if (this.callback) {
             this.callback(e, this.assetsLoaded, this.totalAsset);
             return;

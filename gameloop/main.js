@@ -1,35 +1,36 @@
 var ctx_font = "Consolas",
     ctx_fontsize = 10,
-    ctx_backColor = "#333";
+    ctx_backColor = "#EEE";
 
 var game;
 var asset;
-
 var assetSource = {
     img: {
-        
+
     },
     sound: {
 
     }
 };
-
-function init() {
+function preload() {
     console.log("PreLoad...");
 
     var assetCallback = (obj, count, total) => {
-        document.getElementById('progressNum').innerHTML = `${Math.round(count / total * 100)}%`
-
+        document.getElementById('progressNum').innerHTML = `${count}/${total}`
         var pBar = document.getElementById('progress-bar');
-        pBar.value = count / total;
-
-        console.log(minsecms(), obj.path[0].src)
-        if (count == total) {
-            main();
+        pBar.value = count / Math.max(total, 1)
+        console.log('loaded:' + count / Math.max(total, 1))
+        // console.log(minsecms(), obj.path[0].src)
+        if (count >= total) {
+            init()
         }
     }
 
     asset = new assetLoader(assetSource, assetCallback);
+
+}
+function init() {
+    main();
 }
 
 function main() {
@@ -64,23 +65,21 @@ function draw(ctx, interp) {
     // debug
     let r = 40;
     let mousePos = game.mousePos;
-    drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#FF0", 10);
+    drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
 
-    drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#FFF", 10);
+    drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 }
 
 
 //---------------------
 window.onload = function () {
-    init();
+    preload()
 }
 
 window.onblur = function () {
-    // console.log("blur:" + point.x);
-    game.loop.pause()
+    if (game) game.loop.pause()
 }
 
 window.onfocus = function () {
-    // console.log("focus:" + point.x);
-    game.loop.pause()
+    if (game) game.loop.pause()
 }

@@ -20,21 +20,22 @@ class Game {
         this.height = GetValue(config, 'height', 600);
         this.canvasOnCenter = GetValue(config, 'canvasOnCenter', 1);
         this.ctx = CreateDisplay("GameCanvas", this.width, this.height, this.canvasOnCenter);
+        this.ctx.imageSmoothingEnabled = false;
 
         // sitting input
         this.keys = {}
         this.mousePos = { x: 0, y: 0, isDown: false };
         this.canvasRect = this.ctx.canvas.getBoundingClientRect();
         var canvas = this.ctx.canvas;
-        canvas.addEventListener("keydown", (e) => keys[e.keyCode] = true, false);
-        canvas.addEventListener("keyup", (e) => delete keys[e.keyCode], false);
-        canvas.addEventListener("mousedown", (e) => this.mousePos.isDown = true, false);
-        canvas.addEventListener("mouseup", (e) => this.mousePos.isDown = false, false);
-        canvas.addEventListener("mousemove", (e) => {
+        document.addEventListener("keydown", (e) => this.keys[e.keyCode] = true, false);
+        document.addEventListener("keyup", (e) => delete this.keys[e.keyCode], false);
+        document.addEventListener("mousedown", (e) => this.mousePos.isDown = true, false);
+        document.addEventListener("mouseup", (e) => this.mousePos.isDown = false, false);
+        document.addEventListener("mousemove", (e) => {
             var rect = this.canvasRect;
             // Math.floor(rect.left)
-            this.mousePos.x = e.clientX - rect.left;
-            this.mousePos.y = e.clientY - rect.top;
+            this.mousePos.x = e.clientX - Math.floor(rect.left);
+            this.mousePos.y = e.clientY - Math.floor(rect.top);
         }, false);
 
         // sitting loop
@@ -43,7 +44,7 @@ class Game {
 
         this.loop = new Timer({
             update: (dt, tick) => callback.update(dt, tick),
-            render: () => callback.render(this.ctx)
+            render: (interp) => callback.render(this.ctx, interp)
         }, this.updateStep);
     }
 
@@ -64,7 +65,7 @@ function Timer(callback, step) {
         stepTime = step || 1 / 120,
         isRunning = false,
         isStarted = false;
-    
+
     var panicMax = 120;
 
     var defaultFPS = 60;
@@ -129,7 +130,8 @@ function Timer(callback, step) {
             }
         }
 
-        callback.render();
+        // interp  = accumulator / stepTime
+        callback.render(accumulator / stepTime);
 
         // callback.end()
 

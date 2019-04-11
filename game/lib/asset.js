@@ -1,9 +1,10 @@
 class assetLoader {
     constructor(asset, callback) {
         this.callback = callback;
+        this.isDone = false;
 
-        this.imgs = asset['img'] || {};
-        this.sounds = asset['sound'] || {};
+        this.imgs = asset['imgs'] || {};
+        this.sounds = asset['sounds'] || {};
 
         this.assetsLoaded = 0;
         this.numImgs = Object.keys(this.imgs).length;
@@ -11,8 +12,12 @@ class assetLoader {
         this.totalAsset = this.numImgs + this.numSounds;
 
         console.log(`numImgs:${this.numImgs}`, `numSounds:${this.numSounds}`);
-
-        this.run();
+        // console.log()
+        if (this.totalAsset != 0) {
+            this.run();
+        } else {
+            this.loaded(null);
+        }
     }
     run() {
         var self = this;
@@ -20,7 +25,7 @@ class assetLoader {
         for (let img in this.imgs) {
             src = this.imgs[img];
             var _img = new Image();
-            _img.onload = (e) => self.loaded();
+            _img.onload = (e) => self.loaded(e);
             _img.onerror = (e) => console.log('load error:', e.srcElement);
             _img.src = src;
 
@@ -31,16 +36,18 @@ class assetLoader {
         for (let sound in this.sounds) {
             src = this.sounds[sound];
             var _sound = new Audio();
-            _sound.oncanplay = (e) => self.loaded();
+            _sound.oncanplay = (e) => self.loaded(e);
             _sound.onerror = (e) => console.log('load error:', e.srcElement);
             _sound.src = src;
             this.sounds[sound] = _sound;
         }
     }
-    loaded() {
-        this.assetsLoaded++;
+    loaded(e) {
+        if (this.totalAsset != 0)
+            this.assetsLoaded++;
+            
         if (this.callback) {
-            this.callback(this, this.assetsLoaded, this.totalAsset);
+            this.callback(e, this.assetsLoaded, this.totalAsset);
             return;
         }
 

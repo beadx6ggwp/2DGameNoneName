@@ -20,6 +20,7 @@ class Game {
         this.height = GetValue(config, 'height', 600);
         this.canvasOnCenter = GetValue(config, 'canvasOnCenter', 1);
         this.ctx = CreateDisplay("GameCanvas", this.width, this.height, this.canvasOnCenter);
+        this.ctx.imageSmoothingEnabled=false;
 
         // sitting input
         this.keys = {}
