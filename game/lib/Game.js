@@ -32,11 +32,13 @@ class Game {
         document.addEventListener("mousedown", (e) => this.mousePos.isDown = true, false);
         document.addEventListener("mouseup", (e) => this.mousePos.isDown = false, false);
         document.addEventListener("mousemove", (e) => {
-            var rect = this.canvasRect;
+            // var rect = this.canvasRect;
+            var rect = this.ctx.canvas.getBoundingClientRect();
             // Math.floor(rect.left)
             this.mousePos.x = e.clientX - Math.floor(rect.left);
             this.mousePos.y = e.clientY - Math.floor(rect.top);
         }, false);
+        this.ctx.scale(1, 1);
 
         // sitting loop
         this.updateStep = GetValue(config, 'updateStep', 1 / 120);
