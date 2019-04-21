@@ -8,8 +8,7 @@ class Player {
         this.speed = 200;
 
         // colliderRef碰撞體相對於中心的位置，collider實際進行檢測
-        this.colliderRef = new Box(config.collider || {}, 2);
-        this.collider = new Box(config.collider, 2);
+        this.colliderRef = new Box(config.collider || {});
 
         this.status = 'stand';
         this.ismove = false;
@@ -91,7 +90,7 @@ class Player {
 
     getCollisionBox() {
         // 更新碰撞盒位置
-        let collider = this.collider.clone();
+        let collider = this.colliderRef.clone();
         collider.pos.add(this.pos);
         return collider;
     }

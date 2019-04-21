@@ -10,23 +10,53 @@
  * @param {number} scale - 縮放比
  */
 class Box {
-    constructor(x = 0, y = 0, w = 0, h = 0, scale = 1) {
+    constructor(x = 0, y = 0, w = 0, h = 0) {
         let o = arguments[0];
         if (typeof o === "object") {
-            scale = arguments[1];
-            this.pos = new Vector(o.x, o.y).multiplyScalar(scale);;
-            this.w = o.w * scale;
-            this.h = o.h * scale;
+            this.pos = new Vector(o.x, o.y);
+            this.w = o.w;
+            this.h = o.h;
         } else {
-            this.pos = new Vector(x, y).multiplyScalar(scale);
-            this.w = w * scale;
-            this.h = h * scale;
+            this.pos = new Vector(x, y);
+            this.w = w;
+            this.h = h;
         }
     }
-
     clone() {
         return new Box(this.pos.x, this.pos.y, this.w, this.h);
     }
+}
+
+
+function InRange(value, min, max) {
+    return value >= Math.min(min, max) && value <= Math.max(min, max);
+}
+
+/*
+    min1           max1
+    *---------------*
+              min2           max2
+              *---------------*
+*/
+function RangeIntersect(min1, max1, min2, max2) {
+    // imagine here have two rectangle,and u will know how does it work
+    return Math.max(min1, max1) >= Math.min(min2, max2) &&
+        Math.min(min1, max1) <= Math.max(min2, max2);
+}
+
+
+// 之後再整理
+function rect2rect(boxA, boxB) {
+    let horizontal = RangeIntersect(boxA.pos.x, boxA.pos.x + boxA.w, boxB.pos.x, boxB.pos.x + boxB.w)
+    let vertical = RangeIntersect(boxA.pos.y, boxA.pos.y + boxA.h, boxB.pos.y, boxB.pos.y + boxB.h);
+
+    return horizontal && vertical;
+}
+
+function point2rect(point, box) {
+    let horizontal = InRange(point.x, box.pos.x, box.pos.x + box.w);
+    let vertical = InRange(point.y, box.pos.y, box.pos.y + box.h);
+    return horizontal && vertical;
 }
 
 /**
@@ -40,8 +70,7 @@ function rectCollisionResponse(boxA, boxB) {
     var r2x_minmax = { min: boxB.pos.x, max: boxB.pos.x + boxB.w }
     var r2y_minmax = { min: boxB.pos.y, max: boxB.pos.y + boxB.h }
 
-    var collided = r1x_minmax.max > r2x_minmax.min && r1x_minmax.min < r2x_minmax.max &&
-        r1y_minmax.min < r2y_minmax.max && r1y_minmax.max > r2y_minmax.min;
+    var collided = rect2rect(boxA, boxB);
 
     var mtv = { x: 0, y: 0 };
     var edgediff = [];
