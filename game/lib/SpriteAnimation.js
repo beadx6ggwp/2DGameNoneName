@@ -68,6 +68,7 @@ Animation.prototype.setStartEnd = function (seqStr) {
     // 1. new新的animation
     // 2. 設定為不循環
 }
+
 Animation.prototype.update = function () {
     if (new Date().getTime() - this.lastTime > this.frameSleep) {
         this.currentFrame = (this.currentFrame + 1) % this.animationSequence.length;

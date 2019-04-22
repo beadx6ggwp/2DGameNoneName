@@ -1,6 +1,6 @@
 var ctx_font = "Consolas",
     ctx_fontsize = 10,
-    ctx_backColor = "#EEE";
+    ctx_backColor = "#555";
 
 //
 var gameConfig = {
@@ -12,7 +12,8 @@ var gameConfig = {
 var assetSource = {
     imgs: {
         player: 'asset/ani1.png',
-        player2: 'asset/ani2.png'
+        player2: 'asset/ani2.png',
+        tilecolor: 'asset/tilecolor.png'
     },
     sounds: {
 
@@ -20,7 +21,7 @@ var assetSource = {
 };
 var aniData = {
     'player': {
-        // centerPos :原圖人物中心
+        // centerPos
         pos: { x: 50, y: 50 },
         collider: {
             x: -16, y: 0,
@@ -119,9 +120,6 @@ function draw(ctx, interp) {
     // drawMap(ctx, map);
     drawMapWithCamera(ctx, map, camera);
 
-    var pImg = asset.imgs.player;
-    ctx.drawImage(pImg, 0, 200, pImg.width, pImg.height);
-
     player.draw(ctx);
 
     // debug
@@ -139,65 +137,6 @@ function draw(ctx, interp) {
     drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 
 
-}
-
-function drawMap(ctx, map) {
-    var tw = map.tileWidth;
-    var th = map.tileHeight;
-    for (var row = 0; row < map.rows; row++) {
-        for (var col = 0; col < map.cols; col++) {
-            var tile = getTileTypeFromPos(map, row, col);
-            var x = (col * tw);
-            var y = (row * th);
-
-            if (tile == 2) {
-                ctx.fillStyle = '#FF7F27';
-            }
-            else if (tile == 3) {
-                ctx.fillStyle = '#00A2E8';
-            }
-            else if (tile == 4) {
-                ctx.fillStyle = '#FFC90E';
-            }
-            ctx.strokeStyle = "rgba(255,255,255,0.1)";
-            ctx.fillRect(x, y, tw, th);
-            ctx.strokeRect(x + 0.5, y + 0.5, tw, th);
-        }
-    }
-}
-function drawMapWithCamera(ctx, map, camera) {
-    let tw = map.tileWidth;
-    let th = map.tileHeight;
-
-    let start = {
-        x: Math.max(0, Math.floor(camera.pos.x / tw)),
-        y: Math.max(0, Math.floor(camera.pos.y / th))
-    }
-    let end = {
-        x: Math.min(Math.floor((camera.pos.x + camera.width) / tw + 1), map.cols),
-        y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), map.rows)
-    }
-    for (let row = start.y; row < end.y; row++) {
-        for (let col = start.x; col < end.x; col++) {
-            let tile = getTileTypeFromPos(map, row, col);
-
-            let x = (col * tw);
-            let y = (row * th);
-
-            if (tile == 2) {
-                ctx.fillStyle = '#FF7F27';
-            }
-            else if (tile == 3) {
-                ctx.fillStyle = '#00A2E8';
-            }
-            else if (tile == 4) {
-                ctx.fillStyle = '#FFC90E';
-            }
-            ctx.fillRect(x, y, tw, th);
-            ctx.strokeStyle = "rgba(255,255,255,0.1)";
-            ctx.strokeRect(x + 0.5, y + 0.5, tw, th);
-        }
-    }
 }
 
 //--------------------
