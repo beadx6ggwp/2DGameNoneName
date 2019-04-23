@@ -40,12 +40,17 @@ class Game {
         }, false);
         this.ctx.scale(1, 1);
 
+        this.Alarm = new Alarm();
+
         // sitting loop
         this.updateStep = GetValue(config, 'updateStep', 1 / 120);
         this.callback = callback;
 
         this.loop = new Timer({
-            update: (dt, tick) => callback.update(dt, tick),
+            update: (dt, tick) => {
+                callback.update(dt, tick);
+                this.Alarm.update(dt);
+            },
             render: (interp) => callback.render(this.ctx, interp)
         }, this.updateStep);
     }
@@ -193,12 +198,92 @@ function Timer(callback, step) {
     };
 }
 
+class Alarm {
+    constructor() {
+        this.eventList = {};
+    };
+    update(dt) {
+        dt *= 1000;
+        for (let key in this.eventList) {
+            let element = this.eventList[key];
+            // 假設是處理的時候是先移動再檢查，最後會多跑一次
+            // 處理剛設定時，少計算的那一次，以對齊次數            
+            // if (element.countTime == 0) element.countTime += dt;
+            element.countTime += dt;
+        }
+    }
+    setTime(eventName, ms) {
+        if (this.eventList[eventName]) return;
+        let now = Date.now();
+        this.eventList[eventName] = {
+            startTime: now,
+            endTIme: now + ms,
+            countTime: 0
+        };
+    }
+    check(eventName) {
+        if (!this.eventList[eventName]) return 0;
+        let event = this.eventList[eventName];
+        let passTime = event.startTime + event.countTime;
+        let timeDiff = passTime - event.endTIme;
+        if (timeDiff >= 0) {
+            delete this.eventList[eventName];
+        }
+        return timeDiff;
+    }
+}
+
+/*
+// 原本使用Date.Now()會導致不準確
+// 像是0.2秒內移動200，vel = 200/0.2=1000，在更新率1/120時
+// 移動0.2秒後會變成208.333或是216.666，會多移動1~2次
+// 原因有待確認
+// 好像就算有對齊時間也是
+Alarm = {
+    setTime: function (eventName, ms) {
+        if (this[eventName]) return;
+        let now = Date.now();
+        this[eventName] = {
+            startTime: now,
+            endTIme: now + ms
+        };
+    },
+    check: function (eventName) {
+        if (!this[eventName]) return 0;
+        let timeDiff = Date.now() - this[eventName].endTIme;
+        if (timeDiff >= 0) {
+            delete this[eventName];
+        }
+        return timeDiff;
+    }
+};
+class Alarm2 {
+    constructor() {
+        this.eventList = {};
+    };
+    setTime(eventName, ms) {
+        if (this.eventList[eventName]) return;
+        let now = Date.now();
+        this.eventList[eventName] = {
+            startTime: now,
+            endTIme: now + ms
+        };
+    }
+    check(eventName) {
+        if (!this.eventList[eventName]) return 0;
+        let timeDiff = Date.now() - this.eventList[eventName].endTIme;
+        if (timeDiff >= 0) {
+            delete this.eventList[eventName];
+        }
+        return timeDiff;
+    }
+}
+*/
 
 function GetValue(source, key, defaultValue) {
     if (source.hasOwnProperty(key)) {
         return source[key];
     }
-
     return defaultValue;
 }
 

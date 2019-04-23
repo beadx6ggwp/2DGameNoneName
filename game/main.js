@@ -81,11 +81,12 @@ function main() {
 }
 
 function update(dt, tickcount) {
-    // console.log(dt);    
+    console.log(dt);    
 
     player.update(dt);
 
     camera.follow(dt, player);
+
 }
 
 
@@ -114,13 +115,14 @@ function draw(ctx, interp) {
     ctx.restore();
 
     drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
-
-
 }
+
+
 
 //--------------------
 
 window.addEventListener("keydown", (e) => {
+    // console.log(e);
 }, false);
 
 window.addEventListener("keyup", (e) => {

@@ -18,7 +18,7 @@ class Camera {
         let traceRangeBox = new Box(center.x - traceRange.x / 2, center.y - traceRange.y / 2,
             traceRange.x, traceRange.y);
 
-        let speed = gameObj.speed * dt;
+        let speed = gameObj.speed * 1.2 * dt;
         // 問題:當跟隨速度 > gameObj的移動速度時，會出現超前狀態，導致抖動
         // 解:當p到edge的距離 < 下次移動距離，直接讓邊移動到 p上
         // 先用ray cast求得移動前 center -> p 在邊上的交點 p'

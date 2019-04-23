@@ -14,6 +14,7 @@ class Player {
         this.ismove = false;
         this.facing = 'down';
         this.action = 'stand-down';
+        this.lastDir = new Vector();
 
         let image = asset.imgs[config.imgName];
         this.sheet = new SpriteSheet(image, config.frameWidth, config.frameHeight);
@@ -24,6 +25,7 @@ class Player {
         this.renderHeight = config.frameHeight * config.renderScale;
     }
     update(dt) {
+        let Alarm = game.Alarm;
         let keys = game.keys;
         let speed = this.speed;
         // input
@@ -32,6 +34,17 @@ class Player {
         if (keys['40']) inputDir.y = 1;
         if (keys['37']) inputDir.x = -1;
         if (keys['39']) inputDir.x = 1;
+
+        // console.log(Alarm.check('roleCoolDown'))
+        if (keys['32'] && Alarm.check('roleCoolDown') == 0) {
+            this.state = 'role';
+
+            let sec = 0.1;
+            Alarm.setTime('roleTime', sec * 1000);
+            // this.vel.x = 200 / sec;
+            this.vel = this.lastDir.clone().norm().setLength(100 / sec);
+        }
+        // console.log(this.lastDir)
 
         if (this.state == 'move') {
             if (keys['38']) {
@@ -51,13 +64,23 @@ class Player {
             if (inputDir.x != 0 || inputDir.y != 0) {
                 this.ismove = true;
                 this.vel = inputDir.norm().setLength(speed);
+                this.lastDir = inputDir.clone();
             } else {
                 this.ismove = false;
                 this.vel.multiplyScalar(0);
             }
         }
 
+        if (this.state == 'role') {
+            if (Alarm.check('roleTime') >= 0) {
+                Alarm.setTime('roleCoolDown', 0.5 * 1000);
+                this.vel.multiplyScalar(0);
+                this.state = 'move';
+            }
+        }
+
         this.pos.add(this.vel.clone().multiplyScalar(dt));
+
 
         boxCollisionResponseToMap(player, map);
 
@@ -66,6 +89,7 @@ class Player {
         this.animation.setStartEnd(this.conf.action[this.action])
 
         this.animation.update();
+
     }
     draw(ctx) {
         ctx.save();
