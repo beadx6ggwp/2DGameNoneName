@@ -10,7 +10,7 @@ class Player {
         // colliderRef碰撞體相對於中心的位置，collider實際進行檢測
         this.colliderRef = new Box(config.collider || {});
 
-        this.status = 'stand';
+        this.state = 'move';
         this.ismove = false;
         this.facing = 'down';
         this.action = 'stand-down';
@@ -26,35 +26,35 @@ class Player {
     update(dt) {
         let keys = game.keys;
         let speed = this.speed;
-        let inputDir = new Vector();
-
         // input
-        if (keys['38']) {
-            inputDir.y = -1;
-            this.facing = 'up';
-        }
-        else if (keys['40']) {
-            inputDir.y = 1;
-            this.facing = 'down';
-        }
-        if (keys['37']) {
-            inputDir.x = -1;
-            this.facing = 'left';
-        }
-        else if (keys['39']) {
-            inputDir.x = 1;
-            this.facing = 'right';
-        }
+        let inputDir = new Vector();
+        if (keys['38']) inputDir.y = -1;
+        if (keys['40']) inputDir.y = 1;
+        if (keys['37']) inputDir.x = -1;
+        if (keys['39']) inputDir.x = 1;
 
-        // 處理移動，並使每個8方向速度一致
-        if (inputDir.x != 0 || inputDir.y != 0) {
-            this.status = 'move';
-            this.ismove = true;
-            this.vel = inputDir.norm().setLength(speed);
-        } else {
-            this.status = 'stand';
-            this.ismove = false;
-            this.vel.multiplyScalar(0);
+        if (this.state == 'move') {
+            if (keys['38']) {
+                this.facing = 'up';
+            }
+            else if (keys['40']) {
+                this.facing = 'down';
+            }
+            if (keys['37']) {
+                this.facing = 'left';
+            }
+            else if (keys['39']) {
+                this.facing = 'right';
+            }
+
+            // 處理移動，並使每個8方向速度一致
+            if (inputDir.x != 0 || inputDir.y != 0) {
+                this.ismove = true;
+                this.vel = inputDir.norm().setLength(speed);
+            } else {
+                this.ismove = false;
+                this.vel.multiplyScalar(0);
+            }
         }
 
         this.pos.add(this.vel.clone().multiplyScalar(dt));

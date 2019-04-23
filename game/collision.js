@@ -104,8 +104,8 @@ function boxCollisionResponseToMap(gameObj, map) {
     for (const p of checkPoint) {
         let col = Math.floor(p.x / map.tileWidth);
         let row = Math.floor(p.y / map.tileHeight);
-        let tileType = getTileTypeFromPos(map, row, col);
-        if (tileType == 3) continue;
+        let tileType = map.getCollisionTile(row, col);
+        if (tileType == 0) continue;
         let checkObj = new Box(col * map.tileWidth, row * map.tileHeight, map.tileWidth, map.tileHeight);
         var result = rectCollisionResponse(checkObj, collider);
         if (result.touch) {

@@ -42,27 +42,6 @@ var aniData = {
             'stand-left': '24',
             'stand-right': '17'
         }
-    },
-    'player2': {
-        centerPos: {
-            x: 32,
-            y: 32
-        },
-        speed: 10,
-        frameWidth: 64,
-        frameHeight: 64,
-        renderScale: 2,
-        imgName: 'player2',
-        action: {
-            'walk-up': '0-8',
-            'walk-down': '18-26',
-            'walk-left': '9-17',
-            'walk-right': '27-35',
-            'stand-up': '0',
-            'stand-down': '18',
-            'stand-left': '9',
-            'stand-right': '27'
-        }
     }
 }
 
