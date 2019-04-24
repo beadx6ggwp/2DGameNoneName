@@ -44,43 +44,58 @@ class Player {
             // this.vel.x = 200 / sec;
             this.vel = this.lastDir.clone().norm().setLength(100 / sec);
         }
-        // console.log(this.lastDir)
 
-        if (this.state == 'move') {
-            if (keys['38']) {
-                this.facing = 'up';
-            }
-            else if (keys['40']) {
-                this.facing = 'down';
-            }
-            if (keys['37']) {
-                this.facing = 'left';
-            }
-            else if (keys['39']) {
-                this.facing = 'right';
-            }
+        if (keys['90'] && Alarm.check('attackCoolDown') == 0) {
+            this.state = 'attack';
 
-            // 處理移動，並使每個8方向速度一致
-            if (inputDir.x != 0 || inputDir.y != 0) {
-                this.ismove = true;
-                this.vel = inputDir.norm().setLength(speed);
-                this.lastDir = inputDir.clone();
-            } else {
-                this.ismove = false;
-                this.vel.multiplyScalar(0);
-            }
+            Alarm.setTime('attack', 0.2 * 1000);
+            this.vel.multiplyScalar(0);
+            this.ismove = false;
         }
 
-        if (this.state == 'role') {
-            if (Alarm.check('roleTime') >= 0) {
-                Alarm.setTime('roleCoolDown', 0.5 * 1000);
-                this.vel.multiplyScalar(0);
-                this.state = 'move';
-            }
-        }
+        switch (this.state) {
+            case 'move':
+                if (keys['38']) {
+                    this.facing = 'up';
+                }
+                else if (keys['40']) {
+                    this.facing = 'down';
+                }
+                if (keys['37']) {
+                    this.facing = 'left';
+                }
+                else if (keys['39']) {
+                    this.facing = 'right';
+                }
 
+                // 處理移動，並使每個8方向速度一致
+                if (inputDir.x != 0 || inputDir.y != 0) {
+                    this.ismove = true;
+                    this.lastDir = inputDir.clone();
+                    this.vel = inputDir.norm().setLength(speed);
+                } else {
+                    this.ismove = false;
+                    this.vel.multiplyScalar(0);
+                }
+                break;
+            case 'role':
+                if (Alarm.check('roleTime') >= 0) {
+                    Alarm.setTime('roleCoolDown', 0.5 * 1000);
+                    this.vel.multiplyScalar(0);
+                    this.state = 'move';
+                }
+                break;
+            case 'attack':
+                console.log('now is attack');
+
+                if (Alarm.check('attack') >= 0) {
+                    Alarm.setTime('attackCoolDown', 0.2 * 1000);
+                    this.state = 'move';
+                }
+                break;
+        }
         this.pos.add(this.vel.clone().multiplyScalar(dt));
-
+        // console.log(this.pos.x)
 
         boxCollisionResponseToMap(player, map);
 
@@ -108,6 +123,15 @@ class Player {
         let c = this.colliderRef;
         ctx.fillStyle = "rgba(255,255,127,0.5)";
         ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+
+        if (this.state == 'attack') {
+            let atkSize = { w: 30, h: 30 };
+            let offset = { x: 0, y: this.renderHeight / 4 };
+            ctx.fillStyle = "rgba(255,50,50,0.7)";
+            let dir = this.lastDir.clone().norm();
+            ctx.fillRect(-atkSize.w / 2 + dir.x * 32 + offset.x, -atkSize.h / 2 + dir.y * 25 + offset.y, atkSize.w, atkSize.h);
+            // console.log(this.lastDir)
+        }
         // end
         ctx.restore();
     }

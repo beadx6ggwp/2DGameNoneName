@@ -81,7 +81,7 @@ function main() {
 }
 
 function update(dt, tickcount) {
-    console.log(dt);    
+    // console.log(dt);
 
     player.update(dt);
 
