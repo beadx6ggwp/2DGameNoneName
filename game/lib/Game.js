@@ -38,6 +38,7 @@ class Game {
             this.mousePos.x = e.clientX - Math.floor(rect.left);
             this.mousePos.y = e.clientY - Math.floor(rect.top);
         }, false);
+        // 目前縮放問題不大，但是滑鼠座標會偏掉
         this.ctx.scale(1, 1);
 
         this.Alarm = new Alarm();
@@ -280,12 +281,6 @@ class Alarm2 {
 }
 */
 
-function GetValue(source, key, defaultValue) {
-    if (source.hasOwnProperty(key)) {
-        return source[key];
-    }
-    return defaultValue;
-}
 
 function CreateDisplay(id, width, height, center, border) {
     let div = document.createElement("div");

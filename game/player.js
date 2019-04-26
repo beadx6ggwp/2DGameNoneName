@@ -42,7 +42,7 @@ class Player {
             let sec = 0.1;
             Alarm.setTime('roleTime', sec * 1000);
             // this.vel.x = 200 / sec;
-            this.vel = this.lastDir.clone().norm().setLength(100 / sec);
+            this.vel = this.lastDir.clone().norm().setLength(120 / sec);
         }
 
         if (keys['90'] && Alarm.check('attackCoolDown') == 0) {
@@ -95,9 +95,8 @@ class Player {
                 break;
         }
         this.pos.add(this.vel.clone().multiplyScalar(dt));
-        // console.log(this.pos.x)
 
-        boxCollisionResponseToMap(player, map);
+        boxCollisionResponseToMap(this, map);
 
         // update anime
         this.action = `${this.ismove ? 'walk' : 'stand'}-${this.facing}`;

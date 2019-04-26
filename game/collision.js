@@ -88,12 +88,31 @@ function rectCollisionResponse(boxA, boxB) {
 
     return {
         touch: collided,
-        MTV: mtv
+        MTV: mtv,
+        edgediff: edgediff
     };
 }
 
+function mtvBounce(gameObj, mtv) {
+    // 處理反彈，不是最佳解法
+    let dir = new Vector(Math.sign(mtv.x), Math.sign(mtv.y));
+    if (dir.x != 0) gameObj.vel.x = dir.x * Math.abs(gameObj.vel.x);
+    if (dir.y != 0) gameObj.vel.y = dir.y * Math.abs(gameObj.vel.y);
+}
+function mtvBounce2(gameObj, mtv) {
+    // v2 = v1 – 2(v1 dot n)n
+    let n = new Vector(mtv.x, mtv.y).norm();
+    let v = gameObj.vel.clone();
+    let dot = 2 * v.dot(n);
+    let v2 = v.subtract(n.multiplyScalar(dot));
+    // console.log(gameObj.vel, v2);
+    gameObj.vel = v2;
+}
 
-function boxCollisionResponseToMap(gameObj, map) {
+
+function boxCollisionResponseToMap(gameObj, map, bounce = false) {
+    if (gameObj == null || map == null) return;
+    
     let collider = gameObj.getCollisionBox();
     let checkPoint = [
         new Vector(collider.pos.x, collider.pos.y),
@@ -101,16 +120,26 @@ function boxCollisionResponseToMap(gameObj, map) {
         new Vector(collider.pos.x, collider.pos.y + collider.h),
         new Vector(collider.pos.x + collider.w, collider.pos.y + collider.h)
     ];
+
+    let isDeal = false;
     for (const p of checkPoint) {
         let col = Math.floor(p.x / map.tileWidth);
         let row = Math.floor(p.y / map.tileHeight);
         let tileType = map.getCollisionTile(row, col);
         if (tileType == 0) continue;
         let checkObj = new Box(col * map.tileWidth, row * map.tileHeight, map.tileWidth, map.tileHeight);
-        var result = rectCollisionResponse(checkObj, collider);
+        let result = rectCollisionResponse(checkObj, collider);
         if (result.touch) {
-            gameObj.pos.x += result.MTV.x;
-            gameObj.pos.y += result.MTV.y;
+            // 目前問題為當物體斜著經過兩個地圖物件之間時，會卡住
+            // 假設往左下移動到兩個Tile之間，會導致上面的正常給 (1,0)反饋，但下面那塊是剛進入，反而會給(0,-1)，導致卡住
+            // 目前解決方法，回饋時多推一點，讓他能避過剛進入第二塊的狀況
+            gameObj.pos.x += result.MTV.x * 1.25;
+            gameObj.pos.y += result.MTV.y * 1.25;
+
+            if (bounce && !isDeal) {
+                mtvBounce2(gameObj, result.MTV)
+                isDeal = true;
+            }
         }
     }
 }

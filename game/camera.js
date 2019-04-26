@@ -67,10 +67,10 @@ class Camera {
         // limit min and max
         let maxW = world.cols * world.tileWidth;
         let maxH = world.rows * world.tileHeight;
-        // if (this.pos.x < 0) this.pos.x = 0;
-        // if (this.pos.y < 0) this.pos.y = 0;
-        // if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
-        // if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
+        if (this.pos.x < 0) this.pos.x = 0;
+        if (this.pos.y < 0) this.pos.y = 0;
+        if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
+        if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
     }
     getMousePos(gameMouse) {
         // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移
