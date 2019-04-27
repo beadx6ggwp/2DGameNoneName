@@ -1,6 +1,30 @@
+/*
+    config example:
+    {
+        pos: { x: 0, y: 0 },
+        vel: { x: 0, y: 0 },
+        collider: {
+            x: -15, y: -15,
+            w: 30, h: 30
+        },
+        bounceWithMap: true,
+        world: Worldmap(tilemap),
+        animation: {
+            frameWidth: 44,
+            frameHeight: 40,
+            renderScale: 1 / 2,
+            imgName: 'coin',
+            speed: 15,
+            action: {
+                'default': '0-9'
+            }
+        }
+    }
+ */
 class Entity {
     constructor(config) {
         // 目前暫指map
+        this.config = config;//直接等於可能會有座標速率被修改的問題，但複製的話感覺太浪費記憶體
         this.world = GetValue(config, 'world', null);
 
         this.name = GetValue(config, 'name', 'defaultEntity');
@@ -62,14 +86,6 @@ class Entity {
             ctx.fillStyle = "#F77";
             ctx.fillRect(-size / 2, -size / 2, size, size);
         }
-
-
-        if (this.colliderRef) {
-            let c = this.colliderRef;
-            ctx.fillStyle = "rgba(255,255,127,0.5)";
-            ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
-        }
-
         ctx.restore();
     }
 

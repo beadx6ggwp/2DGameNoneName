@@ -18,7 +18,7 @@ class Camera {
         let traceRangeBox = new Box(center.x - traceRange.x / 2, center.y - traceRange.y / 2,
             traceRange.x, traceRange.y);
 
-        let speed = gameObj.speed * 1.2 * dt;
+        let speed = gameObj.moveSpeed * 1.2 * dt;
         // 問題:當跟隨速度 > gameObj的移動速度時，會出現超前狀態，導致抖動
         // 解:當p到edge的距離 < 下次移動距離，直接讓邊移動到 p上
         // 先用ray cast求得移動前 center -> p 在邊上的交點 p'
@@ -67,10 +67,10 @@ class Camera {
         // limit min and max
         let maxW = world.cols * world.tileWidth;
         let maxH = world.rows * world.tileHeight;
-        if (this.pos.x < 0) this.pos.x = 0;
-        if (this.pos.y < 0) this.pos.y = 0;
-        if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
-        if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
+        // if (this.pos.x < 0) this.pos.x = 0;
+        // if (this.pos.y < 0) this.pos.y = 0;
+        // if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
+        // if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
     }
     getMousePos(gameMouse) {
         // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移

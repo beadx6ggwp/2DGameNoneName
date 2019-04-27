@@ -60,37 +60,13 @@ var coinAnimation = {
     }
 }
 
-var aniData = {
-    'player': {
-        // centerPos
-        pos: { x: 50, y: 50 },
-        collider: {
-            x: -16, y: 0,
-            w: 32, h: 24
-        },
-        speed: 15,
-        frameWidth: 17,
-        frameHeight: 25,
-        renderScale: 2,
-        imgName: 'player',
-        action: {
-            'walk-up': '10,11,12,13,12,11,10,9,8,7,8,9',
-            'walk-down': '3,4,5,6,5,4,3,2,1,0,1,2',
-            'walk-left': '24,25,26,27,26,25,24,23,22,21,22,23',
-            'walk-right': '17,18,19,20,19,18,17,16,15,14,15,16',
-            'stand-up': '10',
-            'stand-down': '3',
-            'stand-left': '24',
-            'stand-right': '17'
-        }
-    }
-}
-
 var game;
 var camera
 var asset;
 var player;
 var entities = [];
+
+var debugMode = false;
 
 function preload() {
     console.log("PreLoad...");
@@ -108,7 +84,6 @@ function init() {
         render: draw
     }, gameConfig);
 
-    player = new Player(aniData['player']);
     camera = new Camera(map);
     camera.width = gameConfig.width;
     camera.height = gameConfig.height;
@@ -118,15 +93,31 @@ function init() {
             pos: { x: randomInt(32, 400), y: randomInt(32, 400) },
             vel: { x: randomInt(-80, 80), y: randomInt(-80, 80) },
             collider: {
-                x: -15, y: -15,
-                w: 30, h: 30
+                x: -11, y: -10,
+                w: 22, h: 20
             },
             bounceWithMap: true,
             world: map,
-            animation: player1Animation
+            animation: coinAnimation
         };
         entities.push(new Entity(test));
     }
+
+    player = new Player({
+        name: 'player',
+        pos: { x: randomInt(32, 400), y: randomInt(32, 400) },
+        vel: { x: 0, y: 0 },
+        acc: { x: 0, y: 0 },
+        moveSpeed: 200,
+        collider: {
+            x: -16, y: 0,
+            w: 32, h: 24
+        },
+        bounceWithMap: true,
+        world: map,
+        animation: player1Animation
+    });
+    entities.push(player);
 
     main();
 }
@@ -139,14 +130,10 @@ function main() {
 
 function update(dt, tickcount) {
     // console.log(dt);
-
     for (const entity of entities) {
         entity.update(dt);
     }
-    player.update(dt);
-
     camera.follow(dt, player);
-
 }
 
 
@@ -156,29 +143,54 @@ function draw(ctx, interp) {
     ctx.fillRect(0, 0, game.width, game.height);
     ctx.save();
     // draw
-    ctx.translate(-camera.pos.x, -camera.pos.y);
-    // drawMap(ctx, map);
-    drawMapWithCamera(ctx, map, camera);
 
+    ctx.translate(-camera.pos.x, -camera.pos.y);
+
+    drawMapWithCamera(ctx, map, camera);
 
     for (const entity of entities) {
         entity.draw(ctx);
     }
 
-    player.draw(ctx);
-    // debug
-
-    let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
-    ctx.strokeStyle = "rgba(255,50,50,0.7)";
-    ctx.strokeRect(center.x - camera.traceRange.x / 2, center.y - camera.traceRange.y / 2, camera.traceRange.x, camera.traceRange.y);
-
-    let r = 40;
-    let mousePos = camera.getMousePos(game.mousePos);
-    drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
+    if (debugMode)
+        showDebugInfo(ctx);// 小卡，為什麼要放在這裡才會對準
 
     ctx.restore();
 
     drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
+}
+
+function showDebugInfo(ctx) {
+    // debug
+
+    let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
+    ctx.strokeStyle = "rgba(255,0,0,1)";
+    ctx.strokeRect(center.x - camera.traceRange.x / 2, center.y - camera.traceRange.y / 2, camera.traceRange.x, camera.traceRange.y);
+
+    for (const entity of entities) {
+        ctx.save();
+        // start
+        ctx.translate(entity.pos.x, entity.pos.y);
+
+        ctx.strokeStyle = "rgba(0,0,0,1)";
+        ctx.strokeRect(-entity.renderWidth / 2, -entity.renderHeight / 2, entity.renderWidth, entity.renderHeight);
+
+        let boxhalf = 2;
+        ctx.fillStyle = "rgba(255,0,0,0.8)";
+        ctx.fillRect(- boxhalf, - boxhalf, boxhalf * 2, boxhalf * 2);
+
+        if (entity.colliderRef) {
+            let c = entity.colliderRef;
+            ctx.fillStyle = "rgba(255,255,127,0.5)";
+            ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+        }
+
+        ctx.restore();
+    }
+
+    let r = 40;
+    let mousePos = camera.getMousePos(game.mousePos);
+    drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
 }
 
 
@@ -187,6 +199,9 @@ function draw(ctx, interp) {
 
 window.addEventListener("keydown", (e) => {
     // console.log(e);
+    if (e.keyCode == 84) {
+        debugMode = !debugMode;
+    }
 }, false);
 
 window.addEventListener("keyup", (e) => {

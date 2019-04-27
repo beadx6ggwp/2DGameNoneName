@@ -70,8 +70,18 @@ Animation.prototype.setStartEnd = function (seqStr) {
 }
 
 Animation.prototype.update = function () {
-    if (new Date().getTime() - this.lastTime > this.frameSleep) {
+    // 這邊時間其實沒有對齊
+    let timeDiff = new Date().getTime() - this.lastTime;
+    if (timeDiff > this.frameSleep) {
         this.currentFrame = (this.currentFrame + 1) % this.animationSequence.length;
+        // console.log(timeDiff)
+        // - (timeDiff - this.frameSleep)
+        // 以coin的Animation speed 15來看，不加上這行對準每次計時個開始，會導致有偏差
+        // |----------|----------|----------|----------|      game.update
+        // |---------------|----------------------|-----      anime.update
+        //                 [diff]                 [diff]
+        // 但離開視窗後再回來，因為基準是Date.Now()，所以會導致快速刷新
+        // 考慮像Alarm那樣以dt為底做更新
         this.lastTime = new Date().getTime();
     }
 }

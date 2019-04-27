@@ -112,7 +112,7 @@ function mtvBounce2(gameObj, mtv) {
 
 function boxCollisionResponseToMap(gameObj, map, bounce = false) {
     if (gameObj == null || map == null) return;
-    
+
     let collider = gameObj.getCollisionBox();
     let checkPoint = [
         new Vector(collider.pos.x, collider.pos.y),
