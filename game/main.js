@@ -16,6 +16,7 @@ var assetSource = {
         tilecolor: 'asset/tilecolor.png',
         coin: 'asset/coin.png',
         robin: 'asset/robin.png',
+        swoosh: 'asset/swoosh.png'
     },
     sounds: {
 
@@ -42,9 +43,10 @@ var player1Animation = {
 var robinAnimation = {
     frameWidth: 1200 / 5,
     frameHeight: 1570 / 5,
-    renderScale: 1 / 3,
+    renderScale: 1 / 7,
     imgName: 'robin',
     speed: 15,
+    repeat: true,
     action: {
         'default': '0-21'
     }
@@ -55,10 +57,23 @@ var coinAnimation = {
     renderScale: 1 / 2,
     imgName: 'coin',
     speed: 15,
+    repeat: true,
     action: {
         'default': '0-9'
     }
 }
+var swordAnimation = {
+    frameWidth: 128 / 4,
+    frameHeight: 32,
+    renderScale: 1.5,
+    imgName: 'swoosh',
+    speed: 25,
+    repeat: false,
+    action: {
+        'default': '0-3'
+    }
+}
+
 
 var game;
 var camera
@@ -90,7 +105,7 @@ function init() {
 
     for (let index = 0; index < 100; index++) {
         let test = {
-            pos: { x: randomInt(32, 400), y: randomInt(32, 400) },
+            pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
             vel: { x: randomInt(-80, 80), y: randomInt(-80, 80) },
             collider: {
                 x: -11, y: -10,
@@ -98,9 +113,9 @@ function init() {
             },
             bounceWithMap: true,
             world: map,
-            animation: coinAnimation
+            animation: robinAnimation
         };
-        entities.push(new Entity(test));
+        entities.push(new Enemy1(test));
     }
 
     player = new Player({
@@ -128,10 +143,33 @@ function main() {
     game.start();
 }
 
+// dt: sec, 1/120 like 0.008333...
 function update(dt, tickcount) {
     // console.log(dt);
     for (const entity of entities) {
+        // if(entity.name =='atk')console.log(entity)
         entity.update(dt);
+        // if (entity.animation.finish) {
+        //     console.log('ani finish')
+        // }
+    }
+    for (let i = entities.length - 1; i >= 0; i--) {
+        const entity = entities[i];
+        if (entity.name == 'player') continue;
+        for (let j = entities.length - 1; j >= 0; j--) {
+            const entity2 = entities[j];
+            if (entity2.name == 'player') continue;
+            if (entity.name == entity2.name) continue;
+            if (rect2rect(entity.getCollisionBox(), entity2.getCollisionBox())) {
+                entities.splice(j, 1);
+                break;
+            }
+        }
+    }
+
+    for (let i = entities.length - 1; i >= 0; i--) {
+        const entity = entities[i];
+        if (entity.isDead) entities.splice(i, 1);
     }
     camera.follow(dt, player);
 }
@@ -152,16 +190,18 @@ function draw(ctx, interp) {
         entity.draw(ctx);
     }
 
-    if (debugMode)
-        showDebugInfo(ctx);// 小卡，為什麼要放在這裡才會對準
-
     ctx.restore();
 
-    drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
+
+    if (debugMode)
+        showDebugInfo(ctx);
+    // drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 }
 
 function showDebugInfo(ctx) {
     // debug
+    ctx.save();
+    ctx.translate(-camera.pos.x, -camera.pos.y);// 小卡
 
     let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
     ctx.strokeStyle = "rgba(255,0,0,1)";
@@ -191,6 +231,10 @@ function showDebugInfo(ctx) {
     let r = 40;
     let mousePos = camera.getMousePos(game.mousePos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
+    ctx.restore();
+
+    drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
+
 }
 
 

@@ -38,6 +38,10 @@ class Entity {
         this.vel = GetValue(config, 'vel', new Vector());
         this.vel = new Vector(this.vel.x, this.vel.y);
 
+        this.survivalMode = GetValue(config, 'survivalMode', false);
+        this.survivalTime = GetValue(config, 'survivalTime', -1);
+
+        this.collisionToMap = GetValue(config, 'collisionToMap', true);
         this.bounceWithMap = GetValue(config, 'bounceWithMap', false);
 
         this.colliderRef = GetValue(config, 'collider', null);
@@ -47,13 +51,16 @@ class Entity {
         this.aniData = GetValue(config, 'animation', null);
         if (this.aniData != null) {
             let ani = this.aniData;
+            this.rotate = GetValue(ani, 'rotate', 0);
+            this.scaleX = GetValue(ani, 'scaleX', 1);
+            this.scaleY = GetValue(ani, 'scaleY', 1);
             this.renderScale = ani.renderScale;
             this.renderWidth = ani.frameWidth * ani.renderScale;
             this.renderHeight = ani.frameHeight * ani.renderScale;
             // console.log(ani)
             let image = asset.imgs[ani.imgName];
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
-            this.animation = new Animation(this.sheet, ani.speed, ani.action['default']);
+            this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
         }
 
 
@@ -65,18 +72,27 @@ class Entity {
         this.vel.add(this.acc);
         this.pos.add(this.vel.clone().multiplyScalar(dt));
 
-        if (this.colliderRef != null && this.world != null) {
+        if (this.collisionToMap && this.colliderRef != null && this.world != null) {
             boxCollisionResponseToMap(this, this.world, this.bounceWithMap);
         }
 
         if (this.animation) {
-            this.animation.update();
+            this.animation.update(dt);
+        }
+
+        if (this.survivalMode) {
+            this.survivalTime -= dt
+            if (this.survivalTime < 0) {
+                this.isDead = true;
+            }
         }
     }
 
     draw(ctx, interp) {
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(this.rotate * Math.PI / 180);
+        ctx.scale(this.scaleX, this.scaleY);
 
         if (this.animation) {
             // if(this.vel.x > 0) ctx.scale(-1,1);

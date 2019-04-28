@@ -223,7 +223,7 @@ class Alarm {
         };
     }
     check(eventName) {
-        if (!this.eventList[eventName]) return 0;
+        if (!this.eventList[eventName]) return null;
         let event = this.eventList[eventName];
         let passTime = event.startTime + event.countTime;
         let timeDiff = passTime - event.endTIme;

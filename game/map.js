@@ -68,7 +68,7 @@ function drawMapWithCamera(ctx, map, camera) {
         x: Math.min(Math.floor((camera.pos.x + camera.width) / tw + 1), map.cols),
         y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), map.rows)
     }
-
+    
     let img = asset.imgs[map.tileset.imgName];
     let framesPerRow = img.width / tw;
     for (let row = start.y; row < end.y; row++) {

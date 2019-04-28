@@ -19,7 +19,7 @@ function SpriteSheet(imgData, frameWidth, frameHeight) {
     }
 
 }
-function Animation(spriteSheet, frameSpeedPerSecond, seqStr) {
+function Animation(spriteSheet, frameSpeedPerSecond, seqStr, repeat = true) {
     this.spriteSheet = spriteSheet;
 
     this.lastAnimationSequence = [];
@@ -28,6 +28,10 @@ function Animation(spriteSheet, frameSpeedPerSecond, seqStr) {
 
     this.frameSleep = 1000 / frameSpeedPerSecond;
     this.lastTime = new Date().getTime();
+    this.accumulator = 0;// ms
+
+    this.finish = false;
+    this.repeat = repeat;
 
     this.setStartEnd(seqStr);
 }
@@ -68,24 +72,30 @@ Animation.prototype.setStartEnd = function (seqStr) {
     // 1. new新的animation
     // 2. 設定為不循環
 }
-
-Animation.prototype.update = function () {
-    // 這邊時間其實沒有對齊
-    let timeDiff = new Date().getTime() - this.lastTime;
-    if (timeDiff > this.frameSleep) {
+/*
+let timeDiff = new Date().getTime() - this.lastTime;
+this.lastTime = new Date().getTime() - (timeDiff - this.frameSleep)
+以coin的Animation speed 15來看，不加上這行對準每次計時個開始，會導致有偏差
+|----------|----------|----------|----------|      game.update
+|---------------|----------------------|-----      anime.update
+                [diff]                 [diff]
+但離開視窗後再回來，因為基準是Date.Now()，所以會導致快速刷新
+所以換成以dt為底做更新，用accumulator處理偏差，再用dt對齊遊戲主循環的時間，解決暫停後的補幀問題
+*/
+Animation.prototype.update = function (dt) {
+    this.accumulator += dt * 1000;
+    while (!this.finish && this.accumulator > this.frameSleep) {
+        if (this.currentFrame + 1 >= this.animationSequence.length && !this.repeat) {
+            this.finish = true;
+            break;
+        }
         this.currentFrame = (this.currentFrame + 1) % this.animationSequence.length;
-        // console.log(timeDiff)
-        // - (timeDiff - this.frameSleep)
-        // 以coin的Animation speed 15來看，不加上這行對準每次計時個開始，會導致有偏差
-        // |----------|----------|----------|----------|      game.update
-        // |---------------|----------------------|-----      anime.update
-        //                 [diff]                 [diff]
-        // 但離開視窗後再回來，因為基準是Date.Now()，所以會導致快速刷新
-        // 考慮像Alarm那樣以dt為底做更新
-        this.lastTime = new Date().getTime();
+        this.accumulator -= this.frameSleep;
     }
 }
+
 Animation.prototype.draw = function (ctx, x, y, width, height) {
+    if (this.finish) return;
     let index = this.animationSequence[this.currentFrame];
     // console.log(index)
     let framesPerRow = this.spriteSheet.framesPerRow;
