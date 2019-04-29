@@ -20,6 +20,18 @@ function minsecms() {
     return `${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`;
 }
 
+/*
+給定計算v在(n1,n2)佔的比例，換算到(m1,m2)中
+n1|-----V------------|n2
+m1|----------X----------------m2
+*/
+function Ratio(v, n1, n2, m1, m2) {
+    if (v < n1 || v > n2) return 0;//V 不在n1~n2中
+    var x = 0;
+    x = (v * (m2 - m1) - n1 * m2 + n2 * m1) / (n2 - n1);
+    return x;
+}
+
 /**
  * Retrieves a value from an object.
  *

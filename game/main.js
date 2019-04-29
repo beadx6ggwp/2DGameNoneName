@@ -105,13 +105,14 @@ function init() {
 
     for (let index = 0; index < 100; index++) {
         let test = {
+            hp: 2,
             pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
             vel: { x: randomInt(-80, 80), y: randomInt(-80, 80) },
             collider: {
                 x: -11, y: -10,
                 w: 22, h: 20
             },
-            bounceWithMap: true,
+            bounceToMap: true,
             world: map,
             animation: robinAnimation
         };
@@ -128,7 +129,6 @@ function init() {
             x: -16, y: 0,
             w: 32, h: 24
         },
-        bounceWithMap: true,
         world: map,
         animation: player1Animation
     });
@@ -147,25 +147,33 @@ function main() {
 function update(dt, tickcount) {
     // console.log(dt);
     for (const entity of entities) {
-        // if(entity.name =='atk')console.log(entity)
         entity.update(dt);
-        // if (entity.animation.finish) {
-        //     console.log('ani finish')
-        // }
     }
+
     for (let i = entities.length - 1; i >= 0; i--) {
-        const entity = entities[i];
-        if (entity.name == 'player') continue;
+        let entity = entities[i];
+        let had = entity.hitActionData;
+        if (!had) continue;
         for (let j = entities.length - 1; j >= 0; j--) {
-            const entity2 = entities[j];
-            if (entity2.name == 'player') continue;
-            if (entity.name == entity2.name) continue;
-            if (rect2rect(entity.getCollisionBox(), entity2.getCollisionBox())) {
-                entities.splice(j, 1);
-                break;
+            let entity2 = entities[j];
+            if (had.target.indexOf(entity2.name) != -1) {
+                had.action(entity, entity2);
             }
         }
     }
+    // for (let i = entities.length - 1; i >= 0; i--) {
+    //     const entity = entities[i];
+    //     if (entity.name == 'player') continue;
+    //     for (let j = entities.length - 1; j >= 0; j--) {
+    //         const entity2 = entities[j];
+    //         if (entity2.name == 'player') continue;
+    //         if (entity.name == entity2.name) continue;
+    //         if (rect2rect(entity.getCollisionBox(), entity2.getCollisionBox())) {
+    //             entities.splice(j, 1);
+    //             break;
+    //         }
+    //     }
+    // }
 
     for (let i = entities.length - 1; i >= 0; i--) {
         const entity = entities[i];

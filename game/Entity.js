@@ -42,8 +42,12 @@ class Entity {
         this.survivalTime = GetValue(config, 'survivalTime', -1);
 
         this.collisionToMap = GetValue(config, 'collisionToMap', true);
-        this.bounceWithMap = GetValue(config, 'bounceWithMap', false);
+        this.bounceToMap = GetValue(config, 'bounceToMap', false);
 
+        /*
+        {parent:Entity,target:['name',...],action:function(ent1,ent2){}}
+        */
+        this.hitActionData = GetValue(config, 'hitActionData', null);
         this.colliderRef = GetValue(config, 'collider', null);
         if (this.colliderRef != null)
             this.colliderRef = new Box(this.colliderRef);
@@ -62,6 +66,7 @@ class Entity {
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
             this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
         }
+        this.drawBase = false;
 
 
         // need to delect
@@ -73,7 +78,7 @@ class Entity {
         this.pos.add(this.vel.clone().multiplyScalar(dt));
 
         if (this.collisionToMap && this.colliderRef != null && this.world != null) {
-            boxCollisionResponseToMap(this, this.world, this.bounceWithMap);
+            boxCollisionResponseToMap(this, this.world, this.bounceToMap);
         }
 
         if (this.animation) {
@@ -97,9 +102,9 @@ class Entity {
         if (this.animation) {
             // if(this.vel.x > 0) ctx.scale(-1,1);
             this.animation.draw(ctx, -this.renderWidth / 2, -this.renderHeight / 2, this.renderWidth, this.renderHeight);
-        } else {
+        } else if (this.drawBase) {
             let size = 30;
-            ctx.fillStyle = "#F77";
+            ctx.fillStyle = "rgba(255,127,127,0.5)";
             ctx.fillRect(-size / 2, -size / 2, size, size);
         }
         ctx.restore();

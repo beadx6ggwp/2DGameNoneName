@@ -2,6 +2,7 @@ class Player extends Entity {
     constructor(config) {
         super(config);
 
+        // 如果要邊跑邊攻擊的話，是不是state要改成陣列
         this.state = 'move';
         this.ismove = false;
         this.facing = 'down';
@@ -23,10 +24,11 @@ class Player extends Entity {
         if (keys['39']) inputDir.x = 1;
 
         // console.log(Alarm.check('roleCoolDown'))
-        if (keys['32'] && Alarm.check('roleCoolDown') == null) {
+        // this.state == 'move'
+        if (keys['32'] && Alarm.check('roleCoolDown') == null && Alarm.check('roleTime') == null) {
             this.state = 'role';
 
-            let sec = 0.1;
+            let sec = 0.15;
             Alarm.setTime('roleTime', sec * 1000);
             // this.vel.x = 200 / sec;
             this.vel = this.lastDir.clone().norm().setLength(100 / sec);
@@ -35,6 +37,7 @@ class Player extends Entity {
         // if(按下 && 攻擊CD到了 && 現在還沒攻擊)
         if (keys['90'] && Alarm.check('attackCoolDown') == null && Alarm.check('attack') == null) {
             this.state = 'attack';
+            console.log('press atk')
 
             let dir = this.lastDir.clone().norm();
             let mycollider = this.colliderRef;
@@ -54,7 +57,30 @@ class Player extends Entity {
                 collisionToMap: false,
                 bounceWithMap: false,
                 world: map,
-                animation: swordAnimation
+                animation: swordAnimation,
+                hitActionData: {
+                    parent: this,
+                    target: ['enemy1'],
+                    action: function (ent1, ent2) {
+                        if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+                            // 目前對推開敵人的想法，限制推開的角度，往右攻擊應該看起來要往右推，但敵人卻被推到上面
+                            // 對Entity加入Actin系統，在敵人被往右打的時候加入 vec(x, y)之類的加速度，持續n秒
+                            let p1 = ent1.pos.clone();
+                            let p2 = ent2.pos.clone();
+                            let dist = p2.clone().subtract(p1).norm();
+                            let playerDir = ent1.hitActionData.parent.lastDir.clone().norm();
+                            let maxAngle = 45;
+                            // 先用dot判斷夾角，再用cross判斷dist跟dir是順時針關係還是逆時針，來決定要往哪個方向限制
+                            if (Math.acos(playerDir.dot(dist)) * 180 / Math.PI > maxAngle) {
+                                let rotateDir = Math.sign(playerDir.cross(dist));
+                                dist = playerDir.rotate(rotateDir * maxAngle * Math.PI / 180);
+                            }
+                            ent2.pos.add(dist.multiplyScalar(5));
+                            ent2.hit(1);
+                            // ent2.isDead = true;
+                        }
+                    }
+                }
             };
 
             atkConfig.animation.scaleX = Math.sign(dir.x) || 1;
@@ -108,8 +134,6 @@ class Player extends Entity {
                 }
                 break;
             case 'attack':
-                // console.log('now is attack');
-
                 if (Alarm.check('attack') >= 0) {
                     Alarm.setTime('attackCoolDown', 0.3 * 1000);
                     this.state = 'move';
