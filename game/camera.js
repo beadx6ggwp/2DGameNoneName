@@ -71,6 +71,9 @@ class Camera {
         // if (this.pos.y < 0) this.pos.y = 0;
         // if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
         // if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
+
+        this.pos.x = Math.floor(this.pos.x);
+        this.pos.y = Math.floor(this.pos.y);
     }
     getMousePos(gameMouse) {
         // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移

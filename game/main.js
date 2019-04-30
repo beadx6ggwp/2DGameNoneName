@@ -1,6 +1,6 @@
 var ctx_font = "Consolas",
     ctx_fontsize = 10,
-    ctx_backColor = "#555";
+    ctx_backColor = "rgb(109,194,202)";
 
 //
 var gameConfig = {
@@ -11,12 +11,13 @@ var gameConfig = {
 }
 var assetSource = {
     imgs: {
-        player: 'asset/ani1.png',
-        player2: 'asset/ani2.png',
-        tilecolor: 'asset/tilecolor.png',
-        coin: 'asset/coin.png',
-        robin: 'asset/robin.png',
-        swoosh: 'asset/swoosh.png'
+        'player': 'asset/ani1.png',
+        'player2': 'asset/ani2.png',
+        'tilecolor': 'asset/tilecolor.png',
+        'coin': 'asset/coin.png',
+        'robin': 'asset/robin.png',
+        'swoosh': 'asset/swoosh.png',
+        'tileset': 'asset/tileset.png'
     },
     sounds: {
 
@@ -85,7 +86,7 @@ var debugMode = false;
 
 function preload() {
     console.log("PreLoad...");
-    asset = new assetLoader(assetSource, (obj, count, total) => {
+    asset = new AssetLoader(assetSource, (obj, count, total) => {
         console.log(`loaded: ${count}/${total}`)
         if (count >= total)
             init()
@@ -121,7 +122,7 @@ function init() {
 
     player = new Player({
         name: 'player',
-        pos: { x: randomInt(32, 400), y: randomInt(32, 400) },
+        pos: { x: randomInt(200, 400), y: randomInt(200, 400) },
         vel: { x: 0, y: 0 },
         acc: { x: 0, y: 0 },
         moveSpeed: 200,
@@ -133,6 +134,7 @@ function init() {
         animation: player1Animation
     });
     entities.push(player);
+    console.log(player.pos)
 
     main();
 }
@@ -161,19 +163,6 @@ function update(dt, tickcount) {
             }
         }
     }
-    // for (let i = entities.length - 1; i >= 0; i--) {
-    //     const entity = entities[i];
-    //     if (entity.name == 'player') continue;
-    //     for (let j = entities.length - 1; j >= 0; j--) {
-    //         const entity2 = entities[j];
-    //         if (entity2.name == 'player') continue;
-    //         if (entity.name == entity2.name) continue;
-    //         if (rect2rect(entity.getCollisionBox(), entity2.getCollisionBox())) {
-    //             entities.splice(j, 1);
-    //             break;
-    //         }
-    //     }
-    // }
 
     for (let i = entities.length - 1; i >= 0; i--) {
         const entity = entities[i];
@@ -190,9 +179,14 @@ function draw(ctx, interp) {
     ctx.save();
     // draw
 
+    // 所有物品繪製前都先 pos + (-camera.pos)，以camera起始座標為基準繪製
+    // 假設camera(100, 0)、BoxA(10,0)、BoxB(120,0)
+    // 那麼在攝影視角轉換的時候，相當於整個地圖往左移動100px，BoxA(-90, 0)、BoxB(20, 0)，所以畫面只看到BoxB
+    // 要轉換回真實座標的話，只要加回去camera.pos即可
     ctx.translate(-camera.pos.x, -camera.pos.y);
 
-    drawMapWithCamera(ctx, map, camera);
+    map.drawMapWithCamera(ctx, camera);
+    // drawMapWithCamera(ctx, map, camera);
 
     for (const entity of entities) {
         entity.draw(ctx);
@@ -209,7 +203,7 @@ function draw(ctx, interp) {
 function showDebugInfo(ctx) {
     // debug
     ctx.save();
-    ctx.translate(-camera.pos.x, -camera.pos.y);// 小卡
+    ctx.translate(-camera.pos.x, -camera.pos.y);
 
     let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
     ctx.strokeStyle = "rgba(255,0,0,1)";
@@ -236,13 +230,35 @@ function showDebugInfo(ctx) {
         ctx.restore();
     }
 
+    let tw = map.tileWidth;
+    let th = map.tileHeight;
+
+    let start = {
+        x: Math.max(0, Math.floor(camera.pos.x / tw)),
+        y: Math.max(0, Math.floor(camera.pos.y / th))
+    }
+    let end = {
+        x: Math.min(Math.floor((camera.pos.x + camera.width) / tw + 1), map.cols),
+        y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), map.rows)
+    }
+    for (let row = start.y; row < end.y; row++) {
+        for (let col = start.x; col < end.x; col++) {
+            let x = (col * tw);
+            let y = (row * th);
+            let layer = map.collision;
+            let tile = map.getCollisionTile(row, col);
+            if (tile == 0) continue;
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(x, y, tw, th);
+        }
+    }
+
     let r = 40;
     let mousePos = camera.getMousePos(game.mousePos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
     ctx.restore();
 
     drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
-
 }
 
 

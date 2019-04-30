@@ -1,4 +1,4 @@
-class assetLoader {
+class AssetLoader {
     constructor(asset, callback) {
         this.callback = callback;
         this.isDone = false;

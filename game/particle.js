@@ -3,7 +3,7 @@ class Particle extends Entity {
         super(config);
         this.name = 'particle';
 
-        this.radius = 15;
+        this.radius = 20;
         this.timeMax = 0.5;
         this.colors = ['255,180,127', '255,127,127', '255,255,0'];
         // let color = this.colors[randomInt(0, this.colors.length)];
@@ -24,7 +24,8 @@ class Particle extends Entity {
         let alpha = Ratio(this.survivalTime, 0, this.timeMax, 0.5, 1);
         ctx.fillStyle = `rgba(${this.color},${alpha})`;
         ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, r, 0, 2 * Math.PI);
+        // ctx.arc(this.pos.x, this.pos.y, r, 0, 2 * Math.PI);
+        ctx.rect(this.pos.x - r / 2, this.pos.y - r / 2, r, r);
         ctx.fill();
 
         super.draw(ctx);

@@ -3,12 +3,14 @@
     {
         pos: { x: 0, y: 0 },
         vel: { x: 0, y: 0 },
+        acc: { x: 0, y: 0 },
         collider: {
             x: -15, y: -15,
             w: 30, h: 30
         },
-        bounceWithMap: true,
-        world: Worldmap(tilemap),
+        bounceToMap: false,
+        collisionToMap: true,
+        world: Worldmap,
         animation: {
             frameWidth: 44,
             frameHeight: 40,
@@ -18,6 +20,12 @@
             action: {
                 'default': '0-9'
             }
+        },
+        survivalMode : false,
+        survivalTime : -1,
+        hitActionData :{
+            target: [...],
+            action: (ent1, ent2) {...}
         }
     }
  */
