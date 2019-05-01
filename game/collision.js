@@ -64,6 +64,9 @@ function point2rect(point, box) {
  * @param {Box} boxA - 靜
  * @param {Box} boxB - 待測
  */
+// 目前問題為當物體斜著經過兩個地圖物件之間時，會卡住
+// 假設往左下移動到兩個Tile之間，會導致上面的正常給 (1,0)反饋，但下面那塊是剛進入，反而會給(0,-1)，導致卡住
+// 目前解決方法，回饋時多推一點，讓他能避過剛進入第二塊的狀況
 function rectCollisionResponse(boxA, boxB) {
     var r1x_minmax = { min: boxA.pos.x, max: boxA.pos.x + boxA.w }
     var r1y_minmax = { min: boxA.pos.y, max: boxA.pos.y + boxA.h }
@@ -88,8 +91,44 @@ function rectCollisionResponse(boxA, boxB) {
 
     return {
         touch: collided,
-        MTV: mtv,
-        edgediff: edgediff
+        MTV: mtv
+    };
+}
+
+// 詳細參考rectCollision與筆記0501
+function rectCollisionResponse2(boxA, boxB) {
+    boxA.cx = boxA.pos.x + boxA.w / 2;
+    boxA.cy = boxA.pos.y + boxA.h / 2;
+
+    boxB.cx = boxB.pos.x + boxB.w / 2;
+    boxB.cy = boxB.pos.y + boxB.h / 2;
+
+    var dx = boxB.cx - boxA.cx;// x difference between centers
+    var dy = boxB.cy - boxA.cy;// y difference between centers
+    var aw = (boxB.w + boxA.w) * 0.5;// average width(half width)
+    var ah = (boxB.h + boxA.h) * 0.5;// average height(half height)
+    let mtv = { x: 0, y: 0 };
+    /* If either distance is greater than the average dimension there is no collision. */
+    if (Math.abs(dx) > aw || Math.abs(dy) > ah) {
+        return {
+            touch: false,
+            MTV: mtv
+        };
+    }
+    /* To determine which region of this rectangle the rect's center
+    point is in, we have to account for the scale of the this rectangle.
+    To do that, we divide dx and dy by it's width and height respectively. */
+    // 按照佔比來判斷該往哪邊推開，這樣比較合理，不是單比dx、dy的大小
+    if (Math.abs(dx / boxA.w) > Math.abs(dy / boxA.h)) {
+        if (dx < 0) mtv.x = boxA.pos.x - (boxB.pos.x + boxB.w);// left
+        else mtv.x = boxA.pos.x + boxA.w - boxB.pos.x; // right
+    } else {
+        if (dy < 0) mtv.y = boxA.pos.y - (boxB.pos.y + boxB.h);// left
+        else mtv.y = boxA.pos.y + boxA.h - boxB.pos.y; // right
+    }
+    return {
+        touch: true,
+        MTV: mtv
     };
 }
 
@@ -130,11 +169,9 @@ function boxCollisionResponseToMap(gameObj, map, bounce = false) {
         let checkObj = new Box(col * map.tileWidth, row * map.tileHeight, map.tileWidth, map.tileHeight);
         let result = rectCollisionResponse(checkObj, collider);
         if (result.touch) {
-            // 目前問題為當物體斜著經過兩個地圖物件之間時，會卡住
-            // 假設往左下移動到兩個Tile之間，會導致上面的正常給 (1,0)反饋，但下面那塊是剛進入，反而會給(0,-1)，導致卡住
-            // 目前解決方法，回饋時多推一點，讓他能避過剛進入第二塊的狀況
-            gameObj.pos.x += result.MTV.x * 1.25;
-            gameObj.pos.y += result.MTV.y * 1.25;
+            gameObj.pos.x += result.MTV.x * 1.1;
+            gameObj.pos.y += result.MTV.y * 1.1;
+            console.log(result.MTV)
 
             if (bounce && !isDeal) {
                 mtvBounce2(gameObj, result.MTV)

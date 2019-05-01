@@ -25,7 +25,7 @@ class Player extends Entity {
 
         // console.log(Alarm.check('roleCoolDown'))
         // this.state == 'move'
-        if (keys['32'] && Alarm.check('roleCoolDown') == null && Alarm.check('roleTime') == null) {
+        if (this.state == 'move' && keys['32'] && Alarm.check('roleCoolDown') == null && Alarm.check('roleTime') == null) {
             this.state = 'role';
 
             let sec = 0.2;
@@ -35,7 +35,7 @@ class Player extends Entity {
         }
 
         // if(按下 && 攻擊CD到了 && 現在還沒攻擊)
-        if (keys['90'] && Alarm.check('attackCoolDown') == null && Alarm.check('attack') == null) {
+        if (this.state == 'move' && keys['90'] && Alarm.check('attackCoolDown') == null && Alarm.check('attack') == null) {
             this.state = 'attack';
             console.log('press atk')
 
@@ -47,12 +47,12 @@ class Player extends Entity {
             atkObj.survivalTime = atkObj.animation.animationSequence.length * atkObj.animation.frameSleep / 1000;
             entities.push(atkObj);
 
-            Alarm.setTime('attack', 0.2 * 1000);
+            Alarm.setTime('attack', 0.1 * 1000);// 僵直時間
             this.vel.multiplyScalar(0);
             this.ismove = false;
         }
 
-        if (keys['88'] && Alarm.check('shoot') == null) {
+        if (this.state == 'move' && keys['88'] && Alarm.check('shootCoolDown') == null && Alarm.check('shoot') == null) {
             this.state = 'shoot';
             console.log('press atk')
 
@@ -69,10 +69,9 @@ class Player extends Entity {
             atkObj.survivalTime = atkObj.animation.animationSequence.length * atkObj.animation.frameSleep / 1000;
             entities.push(atkObj);
 
-            Alarm.setTime('shoot', 0.2 * 1000);
+            Alarm.setTime('shoot', 0.1 * 1000);
             this.vel.multiplyScalar(0);
             this.ismove = false;
-            this.state = 'move';
         }
 
         switch (this.state) {
@@ -117,6 +116,12 @@ class Player extends Entity {
                     this.state = 'move';
                 }
                 break;
+            case 'shoot':
+                if (Alarm.check('shoot') >= 0) {
+                    Alarm.setTime('shootCoolDown', 0.3 * 1000);
+                    this.state = 'move';
+                }
+                break;
         }
 
         super.update(dt);
@@ -126,14 +131,6 @@ class Player extends Entity {
         // start
         ctx.translate(this.pos.x, this.pos.y);
 
-        // if (this.state == 'attack') {
-        //     let atkSize = { w: 30, h: 30 };
-        //     let offset = { x: 0, y: this.renderHeight / 4 };
-        //     ctx.fillStyle = "rgba(255,50,50,0.7)";
-        //     let dir = this.lastDir.clone().norm();
-        //     ctx.fillRect(-atkSize.w / 2 + dir.x * 32 + offset.x, -atkSize.h / 2 + dir.y * 25 + offset.y, atkSize.w, atkSize.h);
-        //     // console.log(this.lastDir)
-        // }
         ctx.restore();
 
         super.draw(ctx);
@@ -164,18 +161,24 @@ class Player extends Entity {
                 target: ['enemy1'],
                 action: function (ent1, ent2) {
                     if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
-                        // 目前對推開敵人的想法，限制推開的角度，往右攻擊應該看起來要往右推，但敵人卻被推到上面
                         // 對Entity加入Actin系統，在敵人被往右打的時候加入 vec(x, y)之類的加速度，持續n秒
                         let p1 = ent1.pos.clone();
                         let p2 = ent2.pos.clone();
                         let dist = p2.clone().subtract(p1).norm();
                         let playerDir = ent1.hitActionData.parent.lastDir.clone().norm();
-                        let maxAngle = 45;
+                        let maxAngle = 30;
                         // 先用dot判斷夾角，再用cross判斷dist跟dir是順時針關係還是逆時針，來決定要往哪個方向限制
-                        if (Math.acos(playerDir.dot(dist)) * 180 / Math.PI > maxAngle) {
-                            let rotateDir = Math.sign(playerDir.cross(dist));
-                            dist = playerDir.rotate(rotateDir * maxAngle * Math.PI / 180);
+                        // if (Math.acos(playerDir.dot(dist)) * 180 / Math.PI > maxAngle) {
+                        //     let rotateDir = Math.sign(playerDir.cross(dist));
+                        //     dist = playerDir.rotate(rotateDir * maxAngle * Math.PI / 180);
+                        // }
+                        let ang1 = dist.getAngleDeg();
+                        let ang2 = playerDir.getAngleDeg();
+                        let theta = ang2 - ang1;
+                        if (Math.abs(theta) > maxAngle) {
+                            dist.rotateDeg(theta);
                         }
+                        // if()
                         ent2.pos.add(dist.multiplyScalar(15));
                         ent2.hit(1);
                         // ent2.isDead = true;

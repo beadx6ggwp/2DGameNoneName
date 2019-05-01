@@ -134,7 +134,6 @@ function init() {
         animation: player1Animation
     });
     entities.push(player);
-    console.log(player.pos)
 
     main();
 }
