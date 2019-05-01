@@ -115,9 +115,6 @@ function rectCollisionResponse2(boxA, boxB) {
             MTV: mtv
         };
     }
-    /* To determine which region of this rectangle the rect's center
-    point is in, we have to account for the scale of the this rectangle.
-    To do that, we divide dx and dy by it's width and height respectively. */
     // 按照佔比來判斷該往哪邊推開，這樣比較合理，不是單比dx、dy的大小
     if (Math.abs(dx / boxA.w) > Math.abs(dy / boxA.h)) {
         if (dx < 0) mtv.x = boxA.pos.x - (boxB.pos.x + boxB.w);// left
@@ -171,7 +168,6 @@ function boxCollisionResponseToMap(gameObj, map, bounce = false) {
         if (result.touch) {
             gameObj.pos.x += result.MTV.x * 1.1;
             gameObj.pos.y += result.MTV.y * 1.1;
-            console.log(result.MTV)
 
             if (bounce && !isDeal) {
                 mtvBounce2(gameObj, result.MTV)

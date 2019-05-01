@@ -39,7 +39,7 @@ function createParticles(x, y, num) {
             pos: { x: x, y: y }
         }
         let p = new Particle(config);
-        p.vel.setLength(random(10, 100));
+        p.vel.setLength(random(50, 100));
         p.vel.setAngleDeg(random(0, 360));
 
         entities.push(p);

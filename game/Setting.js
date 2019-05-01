@@ -1,4 +1,88 @@
+// core setting
+var gameConfig = {
+    width: 800,
+    height: 600,
+    canvasOnCenter: 1,
+    updateStep: 1 / 120 // 更新頻率太低會導之碰撞回饋抖動
+}
+
+// asset src setting
+// 設定資訊，name : path
+var assetSource = {
+    imgs: {
+        'player': 'asset/ani1.png',
+        'player2': 'asset/ani2.png',
+        'tilecolor': 'asset/tilecolor.png',
+        'coin': 'asset/coin.png',
+        'robin': 'asset/robin.png',
+        'swoosh': 'asset/swoosh.png',
+        'tileset': 'asset/tileset.png'
+    },
+    sounds: {
+
+    }
+};
+
+// animation sitting
+// 按照固定格式設定即可
+var player1Animation = {
+    frameWidth: 17,
+    frameHeight: 25,
+    renderScale: 2,
+    imgName: 'player',
+    speed: 15,
+    action: {
+        'walk-up': '10,11,12,13,12,11,10,9,8,7,8,9',
+        'walk-down': '3,4,5,6,5,4,3,2,1,0,1,2',
+        'walk-left': '24,25,26,27,26,25,24,23,22,21,22,23',
+        'walk-right': '17,18,19,20,19,18,17,16,15,14,15,16',
+        'stand-up': '10',
+        'stand-down': '3',
+        'stand-left': '24',
+        'stand-right': '17',
+        'default': '3'
+    }
+};
+var robinAnimation = {
+    frameWidth: 1200 / 5,
+    frameHeight: 1570 / 5,
+    renderScale: 1 / 7,
+    imgName: 'robin',
+    speed: 15,
+    repeat: true,
+    action: {
+        'default': '0-21'
+    }
+}
+var coinAnimation = {
+    frameWidth: 44,
+    frameHeight: 40,
+    renderScale: 1 / 2,
+    imgName: 'coin',
+    speed: 15,
+    repeat: true,
+    action: {
+        'default': '0-9'
+    }
+}
+var swordAnimation = {
+    frameWidth: 128 / 4,
+    frameHeight: 32,
+    renderScale: 1.5,
+    imgName: 'swoosh',
+    speed: 25,
+    repeat: false,
+    action: {
+        'default': '0-3'
+    }
+}
+
+
+// map sitting
+var nowMap = 'map2';// 選擇要讀取哪張地圖
+
 var tilemap_data = {};
+
 tilemap_data['map1'] = {
     cols: 40,
     rows: 30,
@@ -46,70 +130,3 @@ tilemap_data['map2'] = {
         height: 224
     }
 }
-
-class TileMap {
-    constructor(config) {
-        this.rows = GetValue(config, 'rows', 0);
-        this.cols = GetValue(config, 'cols', 0);
-        this.tileWidth = GetValue(config, 'tileWidth', 0);
-        this.tileHeight = GetValue(config, 'tileHeight', 0);
-
-        this.layers = GetValue(config, 'layers', {});
-        this.collision = GetValue(config, 'collision', {});
-        this.tileset = GetValue(config, 'tileset', {});
-    }
-
-    getTileWithLayer(layer, row, col) {
-        let index = row * this.cols + col;
-        return this.layers[layer].data[index];
-    }
-    getCollisionTile(row, col) {
-        let index = row * this.cols + col;
-        return this.collision.data[index];
-    }
-
-    drawMapWithCamera(ctx, camera) {
-        let tw = this.tileWidth;
-        let th = this.tileHeight;
-
-        let start = {
-            x: Math.max(0, Math.floor(camera.pos.x / tw)),
-            y: Math.max(0, Math.floor(camera.pos.y / th))
-        }
-        let end = {
-            x: Math.min(Math.floor((camera.pos.x + camera.width) / tw + 1), this.cols),
-            y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), this.rows)
-        }
-
-        let img = asset.imgs[this.tileset.imgName];
-        let framesPerRow = img.width / tw;
-        for (let row = start.y; row < end.y; row++) {
-            for (let col = start.x; col < end.x; col++) {
-                let x = (col * tw);
-                let y = (row * th);
-                for (let layer = 0; layer < this.layers.length; layer++) {
-                    let tile = this.getTileWithLayer(layer, row, col);
-                    let index = tile - 1;
-
-                    let col2 = Math.floor(index % framesPerRow);
-                    let row2 = Math.floor(index / framesPerRow);
-
-                    let sw = tw,
-                        sh = th;
-                    let sx = col2 * sw,
-                        sy = row2 * sh;
-                    let dw = sw,
-                        dh = sh;
-
-                    ctx.drawImage(
-                        img,
-                        sx, sy, sw, sh,
-                        x, y, dw, dh
-                    );
-                }
-            }
-        }
-    }
-}
-
-var map = new TileMap(tilemap_data['map2']);

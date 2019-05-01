@@ -13,7 +13,7 @@ class Enemy1 extends Entity {
 
         if (this.hp <= 0) {
             this.isDead = true;
-            createParticles(this.pos.x, this.pos.y, 30);
+            createParticles(this.pos.x, this.pos.y, 50);
         }
         super.update(dt);
     }
