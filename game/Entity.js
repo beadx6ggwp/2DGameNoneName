@@ -60,6 +60,7 @@ class Entity {
         if (this.colliderRef != null)
             this.colliderRef = new Box(this.colliderRef);
 
+        this.zindex = GetValue(config, 'zindex', 10);
         this.aniData = GetValue(config, 'animation', null);
         if (this.aniData != null) {
             let ani = this.aniData;

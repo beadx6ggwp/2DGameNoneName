@@ -34,10 +34,10 @@ class Player extends Entity {
             this.vel = this.lastDir.clone().norm().setLength(100 / sec);
         }
 
-        // if(按下 && 攻擊CD到了 && 現在還沒攻擊)
+        // if(目前沒其他狀態 && 按下 && 攻擊CD到了 && 現在還沒攻擊)
         if (this.state == 'move' && keys['90'] && Alarm.check('attackCoolDown') == null && Alarm.check('attack') == null) {
             this.state = 'attack';
-            console.log('press atk')
+            // console.log('press atk')
 
             let dir = this.lastDir.clone().norm();
             let atkConfig = this.createAtkConfig();
@@ -54,7 +54,6 @@ class Player extends Entity {
 
         if (this.state == 'move' && keys['88'] && Alarm.check('shootCoolDown') == null && Alarm.check('shoot') == null) {
             this.state = 'shoot';
-            console.log('press atk')
 
             let dir = this.lastDir.clone().norm();
             let atkConfig = this.createAtkConfig();

@@ -26,9 +26,9 @@ function Animation(spriteSheet, frameSpeedPerSecond, seqStr, repeat = true) {
     this.animationSequence = [];
     this.currentFrame = 0;
 
-    this.frameSleep = 1000 / frameSpeedPerSecond;
     this.lastTime = new Date().getTime();
     this.accumulator = 0;// ms
+    this.setSpeed(frameSpeedPerSecond);
 
     this.finish = false;
     this.repeat = repeat;
@@ -36,7 +36,7 @@ function Animation(spriteSheet, frameSpeedPerSecond, seqStr, repeat = true) {
     this.setStartEnd(seqStr);
 }
 Animation.prototype.setSpeed = function (frameSpeedPerSecond) {
-    this.frameSleep = 1000 / frameSpeedPerSecond;
+    this.frameSleep = frameSpeedPerSecond == 0 ? 0 : 1000 / frameSpeedPerSecond;
 }
 Animation.prototype.setStartEnd = function (seqStr) {
     this.lastAnimationSequence = this.animationSequence;
@@ -83,6 +83,8 @@ this.lastTime = new Date().getTime() - (timeDiff - this.frameSleep)
 所以換成以dt為底做更新，用accumulator處理偏差，再用dt對齊遊戲主循環的時間，解決暫停後的補幀問題
 */
 Animation.prototype.update = function (dt) {
+    if (this.frameSleep == 0) return;
+
     this.accumulator += dt * 1000;
     while (!this.finish && this.accumulator > this.frameSleep) {
         if (this.currentFrame + 1 >= this.animationSequence.length && !this.repeat) {

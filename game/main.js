@@ -30,12 +30,13 @@ function init() {
     }, gameConfig);
 
     map = new TileMap(tilemap_data[nowMap]);
+    map.addToRenderList(entities);
 
     camera = new Camera(map);
     camera.width = gameConfig.width;
     camera.height = gameConfig.height;
 
-    for (let index = 0; index < 100; index++) {
+    for (let index = 0; index < 1; index++) {
         let test = {
             hp: 2,
             pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
@@ -115,9 +116,10 @@ function draw(ctx, interp) {
     // 要轉換回真實座標的話，只要加回去camera.pos即可
     ctx.translate(-camera.pos.x, -camera.pos.y);
 
-    map.drawMapWithCamera(ctx, camera);
+    // map.drawMapWithCamera(ctx, camera);
     // drawMapWithCamera(ctx, map, camera);
 
+    entities.sort((a, b) => a.zindex - b.zindex);
     for (const entity of entities) {
         entity.draw(ctx);
     }
@@ -143,16 +145,16 @@ function showDebugInfo(ctx) {
         // start
         ctx.translate(entity.pos.x, entity.pos.y);
 
-        ctx.strokeStyle = "rgba(0,0,0,1)";
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.strokeRect(-entity.renderWidth / 2, -entity.renderHeight / 2, entity.renderWidth, entity.renderHeight);
 
         let boxhalf = 2;
         ctx.fillStyle = "rgba(255,0,0,0.8)";
-        ctx.fillRect(- boxhalf, - boxhalf, boxhalf * 2, boxhalf * 2);
+        ctx.fillRect(- boxhalf/2, - boxhalf/2, boxhalf, boxhalf);
 
         if (entity.colliderRef) {
             let c = entity.colliderRef;
-            ctx.fillStyle = "rgba(255,255,127,0.5)";
+            ctx.fillStyle = "rgba(255,255,127,0.3)";
             ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
         }
 
@@ -177,6 +179,8 @@ function showDebugInfo(ctx) {
             let layer = map.collision;
             let tile = map.getCollisionTile(row, col);
             if (tile == 0) continue;
+            ctx.fillStyle = "rgba(255,255,127,0.3)";
+            ctx.fillRect(x, y, tw, th);
             ctx.strokeStyle = "#000";
             ctx.strokeRect(x, y, tw, th);
         }
@@ -198,6 +202,14 @@ window.addEventListener("keydown", (e) => {
     // console.log(e);
     if (e.keyCode == 84) {
         debugMode = !debugMode;
+    }
+    if(e.key == '2'){
+        player.zindex++;
+        console.log(`player.zindex: ${player.zindex}`);
+    }
+    if(e.key == '1'){
+        player.zindex--;
+        console.log(`player.zindex: ${player.zindex}`);
     }
 }, false);
 

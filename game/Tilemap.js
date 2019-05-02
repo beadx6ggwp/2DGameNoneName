@@ -8,6 +8,34 @@ class TileMap {
         this.layers = GetValue(config, 'layers', {});
         this.collision = GetValue(config, 'collision', {});
         this.tileset = GetValue(config, 'tileset', {});
+
+        this.tileList = [];
+    }
+
+    addToRenderList(entities) {
+        let tw = this.tileWidth;
+        let th = this.tileHeight;
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                let x = (col * tw);
+                let y = (row * th);
+                for (let i = 0; i < this.layers.length; i++) {
+                    let layer = this.layers[i];
+                    let tileIndex = this.getTileWithLayer(i, row, col) - 1;
+                    if (tileIndex < 0) continue;
+                    let tileConfig = {
+                        name: 'tile',
+                        pos: { x: x, y: y },
+                        zindex: layer.zindex,
+                        animation: this.tileset[layer.setName]
+                    }
+                    let entity = new Entity(tileConfig);
+                    entity.animation.currentFrame = tileIndex;
+                    entities.push(entity);
+                    // this.tileList.push(entity);
+                }
+            }
+        }
     }
 
     getTileWithLayer(layer, row, col) {
@@ -32,14 +60,15 @@ class TileMap {
             y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), this.rows)
         }
 
-        let img = asset.imgs[this.tileset.imgName];
-        let framesPerRow = img.width / tw;
         for (let row = start.y; row < end.y; row++) {
             for (let col = start.x; col < end.x; col++) {
                 let x = (col * tw);
                 let y = (row * th);
-                for (let layer = 0; layer < this.layers.length; layer++) {
-                    let tile = this.getTileWithLayer(layer, row, col);
+                for (let i = 0; i < this.layers.length; i++) {
+                    let layer = this.layers[i];
+                    let img = asset.imgs[this.tileset[layer.setName].imgName];
+                    let framesPerRow = img.width / tw;
+                    let tile = this.getTileWithLayer(i, row, col);
                     let index = tile - 1;
 
                     let col2 = Math.floor(index % framesPerRow);
@@ -60,5 +89,11 @@ class TileMap {
                 }
             }
         }
+    }
+}
+
+class Tile extends Entity {
+    constructor(config) {
+        super(config);
     }
 }
