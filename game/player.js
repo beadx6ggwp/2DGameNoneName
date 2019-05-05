@@ -13,8 +13,8 @@ class Player extends Entity {
     }
 
     update(dt) {
-        let Alarm = game.Alarm;
-        let keys = game.keys;
+        let Alarm = world.Alarm;
+        let keys = world.keys;
         let moveSpeed = this.moveSpeed;
         // input
         let inputDir = new Vector();
@@ -22,7 +22,6 @@ class Player extends Entity {
         if (keys['40']) inputDir.y = 1;
         if (keys['37']) inputDir.x = -1;
         if (keys['39']) inputDir.x = 1;
-
         // console.log(Alarm.check('roleCoolDown'))
         // this.state == 'move'
         if (this.state == 'move' && keys['32'] && Alarm.check('roleCoolDown') == null && Alarm.check('roleTime') == null) {
@@ -45,7 +44,7 @@ class Player extends Entity {
 
             let atkObj = new Entity(atkConfig);
             atkObj.survivalTime = atkObj.animation.animationSequence.length * atkObj.animation.frameSleep / 1000;
-            entities.push(atkObj);
+            this.world.addGameObj(atkObj);
 
             Alarm.setTime('attack', 0.1 * 1000);// 僵直時間
             this.vel.multiplyScalar(0);
@@ -66,7 +65,7 @@ class Player extends Entity {
 
             let atkObj = new Entity(atkConfig);
             atkObj.survivalTime = atkObj.animation.animationSequence.length * atkObj.animation.frameSleep / 1000;
-            entities.push(atkObj);
+            this.world.addGameObj(atkObj);
 
             Alarm.setTime('shoot', 0.1 * 1000);
             this.vel.multiplyScalar(0);
@@ -103,6 +102,7 @@ class Player extends Entity {
                 this.animation.setStartEnd(this.aniData.action[this.action])
                 break;
             case 'role':
+                createParticles(this.world, this.pos.x, this.pos.y, 3)
                 if (Alarm.check('roleTime') >= 0) {
                     Alarm.setTime('roleCoolDown', 0.5 * 1000);
                     this.vel.multiplyScalar(0);
@@ -153,8 +153,8 @@ class Player extends Entity {
             collider: collider,
             collisionToMap: false,
             bounceWithMap: false,
-            world: map,
             animation: swordAnimation,
+            zindex: this.zindex,
             hitActionData: {
                 parent: this,
                 target: ['enemy1'],

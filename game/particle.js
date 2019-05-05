@@ -33,15 +33,16 @@ class Particle extends Entity {
     }
 }
 
-function createParticles(x, y, num) {
+function createParticles(world, x, y, num) {
     for (let i = 0; i < num; i++) {
         let config = {
-            pos: { x: x, y: y }
+            pos: { x: x, y: y },
+            zindex: 9
         }
         let p = new Particle(config);
         p.vel.setLength(random(50, 100));
         p.vel.setAngleDeg(random(0, 360));
 
-        entities.push(p);
+        world.addGameObj(p);
     }
 }

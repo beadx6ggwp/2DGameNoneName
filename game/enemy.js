@@ -13,7 +13,7 @@ class Enemy1 extends Entity {
 
         if (this.hp <= 0) {
             this.isDead = true;
-            createParticles(this.pos.x, this.pos.y, 50);
+            createParticles(this.world, this.pos.x, this.pos.y, 50);
         }
         super.update(dt);
     }
@@ -24,8 +24,11 @@ class Enemy1 extends Entity {
         super.draw(ctx);
         if (this.hitCountDown > 0) {
             // let box = this.getCollisionBox();
-            // ctx.fillStyle = `rgba(255,255,255,${random(0, 0.5)})`;
+            // ctx.fillStyle = `rgba(255,255,255,${random(0, 1)})`;
+            // ctx.beginPath();
+            // ctx.arc(this.pos.x,this.pos.y,10,0,Math.PI*2);
             // ctx.fillRect(box.pos.x, box.pos.y, box.w, box.h)
+            // ctx.fill();
         }
         ctx.restore();
     }

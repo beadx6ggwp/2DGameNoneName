@@ -4,52 +4,47 @@ var ctx_font = "Consolas",
 
 //
 
-var map;
-var game;
-var camera
+var world;
 var asset;
 var player;
-var entities = [];
 
 var debugMode = false;
 
 function preload() {
     console.log("PreLoad...");
-    asset = new AssetLoader(assetSource, (obj, count, total) => {
-        console.log(`loaded: ${count}/${total}`)
-        if (count >= total)
+    asset = new AssetLoader(assetSource, (e, obj, count, total) => {
+        let fileType = e.srcElement.constructor.name == 'XMLHttpRequest' ? 'JSON' : e.srcElement.tagName
+        console.log(`%cLoaded: ${count}/${total}, ${fileType}, ${obj}`, 'color: #FF0;')
+        if (count >= total) {
             init()
+        }
     });
 }
 
 function init() {
 
-    game = new Game({
+    world = new Game({
         update: update,
         render: draw
     }, gameConfig);
 
-    map = new TileMap(tilemap_data[nowMap]);
-    map.addToRenderList(entities);
+    map = new TileMap(world, Tilemap_Data[nowMap]);
+    // map.addToRenderList(entities);
+    world.tileMap = map;
 
-    camera = new Camera(map);
-    camera.width = gameConfig.width;
-    camera.height = gameConfig.height;
-
-    for (let index = 0; index < 1; index++) {
+    for (let index = 0; index < 10; index++) {
         let test = {
             hp: 2,
             pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
-            vel: { x: randomInt(-80, 80), y: randomInt(-80, 80) },
+            vel: { x: randomInt(-100, 100), y: randomInt(-100, 100) },
             collider: {
                 x: -11, y: -10,
                 w: 22, h: 20
             },
             bounceToMap: true,
-            world: map,
             animation: robinAnimation
         };
-        entities.push(new Enemy1(test));
+        world.addGameObj(new Enemy1(test));
     }
 
     player = new Player({
@@ -62,10 +57,74 @@ function init() {
             x: -16, y: 0,
             w: 32, h: 24
         },
-        world: map,
         animation: player1Animation
     });
-    entities.push(player);
+    world.addGameObj(player);
+
+    let cameraConfig = {
+        width: world.width,
+        height: world.height,
+        traceRange: {
+            width: 400,
+            height: 300
+        },
+        target: player
+    }
+    world.setCamera(new Camera(cameraConfig));
+
+    let actionBox1 = {
+        name: 'actionBox',
+        pos: {
+            x: 300,
+            y: 300
+        },
+        collider: {
+            x: -20, y: -20,
+            w: 40, h: 40
+        },
+        collisionToMap: false,
+        bounceWithMap: false,
+        hitActionData: {
+            parent: null,
+            target: ['player'],
+            action: function (ent1, ent2) {
+                if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+                    ent2.zindex = 1;
+                    ent2.moveSpeed = 200;
+                }
+            }
+        },
+        zindex: 9,
+        drawBase: true
+    };
+    let actionBox2 = {
+        name: 'actionBox',
+        pos: {
+            x: 400,
+            y: 400
+        },
+        collider: {
+            x: -20, y: -20,
+            w: 40, h: 40
+        },
+        collisionToMap: false,
+        bounceWithMap: false,
+        hitActionData: {
+            parent: null,
+            target: ['player'],
+            action: function (ent1, ent2) {
+                if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+                    ent2.zindex = 10;
+                    ent2.moveSpeed = 500;
+                }
+            }
+        },
+        zindex: 9,
+        drawBase: true
+    };
+
+    world.addGameObj(new Entity(actionBox1));
+    world.addGameObj(new Entity(actionBox2));
 
     main();
 }
@@ -73,12 +132,13 @@ function init() {
 function main() {
     console.log('Start');
 
-    game.start();
+    world.start();
 }
 
 // dt: sec, 1/120 like 0.008333...
 function update(dt, tickcount) {
     // console.log(dt);
+    let entities = world.gameObjs;
     for (const entity of entities) {
         entity.update(dt);
     }
@@ -99,14 +159,16 @@ function update(dt, tickcount) {
         const entity = entities[i];
         if (entity.isDead) entities.splice(i, 1);
     }
-    camera.follow(dt, player);
+    // camera.follow(dt, player);
+
 }
 
 
 function draw(ctx, interp) {
+    let camera = world.camera;
     // clear
     ctx.fillStyle = ctx_backColor;
-    ctx.fillRect(0, 0, game.width, game.height);
+    ctx.fillRect(0, 0, world.width, world.height);
     ctx.save();
     // draw
 
@@ -116,8 +178,7 @@ function draw(ctx, interp) {
     // 要轉換回真實座標的話，只要加回去camera.pos即可
     ctx.translate(-camera.pos.x, -camera.pos.y);
 
-    // map.drawMapWithCamera(ctx, camera);
-    // drawMapWithCamera(ctx, map, camera);
+    let entities = world.gameObjs;
 
     entities.sort((a, b) => a.zindex - b.zindex);
     for (const entity of entities) {
@@ -133,6 +194,7 @@ function draw(ctx, interp) {
 
 function showDebugInfo(ctx) {
     // debug
+    let camera = world.camera;
     ctx.save();
     ctx.translate(-camera.pos.x, -camera.pos.y);
 
@@ -140,6 +202,7 @@ function showDebugInfo(ctx) {
     ctx.strokeStyle = "rgba(255,0,0,1)";
     ctx.strokeRect(center.x - camera.traceRange.x / 2, center.y - camera.traceRange.y / 2, camera.traceRange.x, camera.traceRange.y);
 
+    let entities = world.gameObjs;
     for (const entity of entities) {
         ctx.save();
         // start
@@ -150,7 +213,7 @@ function showDebugInfo(ctx) {
 
         let boxhalf = 2;
         ctx.fillStyle = "rgba(255,0,0,0.8)";
-        ctx.fillRect(- boxhalf/2, - boxhalf/2, boxhalf, boxhalf);
+        ctx.fillRect(- boxhalf / 2, - boxhalf / 2, boxhalf, boxhalf);
 
         if (entity.colliderRef) {
             let c = entity.colliderRef;
@@ -161,6 +224,7 @@ function showDebugInfo(ctx) {
         ctx.restore();
     }
 
+    // 地圖碰撞盒
     let tw = map.tileWidth;
     let th = map.tileHeight;
 
@@ -187,11 +251,11 @@ function showDebugInfo(ctx) {
     }
 
     let r = 40;
-    let mousePos = camera.getMousePos(game.mousePos);
+    let mousePos = camera.getMousePos(world.mousePos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
     ctx.restore();
 
-    drawString(ctx, 'FPS : ' + game.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
+    drawString(ctx, 'FPS : ' + world.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 }
 
 
@@ -203,11 +267,11 @@ window.addEventListener("keydown", (e) => {
     if (e.keyCode == 84) {
         debugMode = !debugMode;
     }
-    if(e.key == '2'){
+    if (e.key == '2') {
         player.zindex++;
         console.log(`player.zindex: ${player.zindex}`);
     }
-    if(e.key == '1'){
+    if (e.key == '1') {
         player.zindex--;
         console.log(`player.zindex: ${player.zindex}`);
     }
@@ -222,10 +286,10 @@ window.onload = function () {
 }
 
 window.onblur = function () {
-    if (game) game.loop.stop()
+    if (world) world.loop.stop()
 }
 
 window.onfocus = function () {
-    if (game) game.loop.start()
+    if (world) world.loop.start()
 }
 

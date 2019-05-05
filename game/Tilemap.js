@@ -1,5 +1,7 @@
 class TileMap {
-    constructor(config) {
+    constructor(world, config) {
+        this.world = world;
+
         this.rows = GetValue(config, 'rows', 0);
         this.cols = GetValue(config, 'cols', 0);
         this.tileWidth = GetValue(config, 'tileWidth', 0);
@@ -10,14 +12,24 @@ class TileMap {
         this.tileset = GetValue(config, 'tileset', {});
 
         this.tileList = [];
+
+        this.addToRenderList(world.gameObjs);
     }
 
-    addToRenderList(entities) {
+    addToRenderList() {
         let tw = this.tileWidth;
         let th = this.tileHeight;
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 // 0502-1
+                /*
+                (x,y)________
+                    |       |
+                    |   +   |
+                    |_______|
+                center(+) = x + tw / 2, y + th / 2
+                因為entity是從中新開始渲染
+                */
                 let x = (col * tw) + tw / 2;
                 let y = (row * th) + th / 2;
                 for (let i = 0; i < this.layers.length; i++) {
@@ -32,7 +44,7 @@ class TileMap {
                     }
                     let entity = new Entity(tileConfig);
                     entity.animation.currentFrame = tileIndex;
-                    entities.push(entity);
+                    this.world.addGameObj(entity);
                     // this.tileList.push(entity);
                 }
             }

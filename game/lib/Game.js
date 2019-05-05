@@ -18,30 +18,23 @@ class Game {
         // sitting canvas
         this.width = GetValue(config, 'width', 800);
         this.height = GetValue(config, 'height', 600);
+
         this.canvasOnCenter = GetValue(config, 'canvasOnCenter', 1);
-        this.ctx = CreateDisplay("GameCanvas", this.width, this.height, this.canvasOnCenter);
+        this.canvas = CreateCanvas("GameCanvas", this.width, this.height, this.canvasOnCenter);
+        this.ctx = CreateDisplayEnvironment(this.canvas, this);
         this.ctx.imageSmoothingEnabled = false;
+        // 目前縮放問題不大，但是滑鼠座標會偏掉
+        this.ctx.scale(1, 1);
 
         // sitting input
         this.keys = {}
         this.mousePos = { x: 0, y: 0, isDown: false };
-        this.canvasRect = this.ctx.canvas.getBoundingClientRect();
-        var canvas = this.ctx.canvas;
-        document.addEventListener("keydown", (e) => this.keys[e.keyCode] = true, false);
-        document.addEventListener("keyup", (e) => delete this.keys[e.keyCode], false);
-        document.addEventListener("mousedown", (e) => this.mousePos.isDown = true, false);
-        document.addEventListener("mouseup", (e) => this.mousePos.isDown = false, false);
-        document.addEventListener("mousemove", (e) => {
-            // var rect = this.canvasRect;
-            var rect = this.ctx.canvas.getBoundingClientRect();
-            // Math.floor(rect.left)
-            this.mousePos.x = e.clientX - Math.floor(rect.left);
-            this.mousePos.y = e.clientY - Math.floor(rect.top);
-        }, false);
-        // 目前縮放問題不大，但是滑鼠座標會偏掉
-        this.ctx.scale(1, 1);
 
+        // settin gameObj
         this.Alarm = new Alarm();
+        this.tileMap = null;
+        this.camera = null;
+        this.gameObjs = [];
 
         // sitting loop
         this.updateStep = GetValue(config, 'updateStep', 1 / 120);
@@ -58,6 +51,16 @@ class Game {
 
     start() {
         this.loop.start()
+    }
+
+    setCamera(camera) {
+        this.camera = camera;
+        if (camera)
+            this.addGameObj(camera);
+    }
+    addGameObj(entity) {
+        entity.world = this;
+        this.gameObjs.push(entity);
     }
 }
 
@@ -281,8 +284,22 @@ class Alarm2 {
 }
 */
 
+function CreateDisplayEnvironment(canvas, world) {
+    document.addEventListener("keydown", (e) => world.keys[e.keyCode] = true, false);
+    document.addEventListener("keyup", (e) => delete world.keys[e.keyCode], false);
+    document.addEventListener("mousedown", (e) => world.mousePos.isDown = true, false);
+    document.addEventListener("mouseup", (e) => world.mousePos.isDown = false, false);
+    document.addEventListener("mousemove", (e) => {
+        // var rect = world.canvasRect;
+        var rect = world.ctx.canvas.getBoundingClientRect();
+        // Math.floor(rect.left)
+        world.mousePos.x = e.clientX - Math.floor(rect.left);
+        world.mousePos.y = e.clientY - Math.floor(rect.top);
+    }, false);
+    return canvas.getContext('2d');
+}
 
-function CreateDisplay(id, width, height, center, border) {
+function CreateCanvas(id, width, height, center, border) {
     let div = document.createElement("div");
     div.id = "divForCanvas";
 
@@ -323,5 +340,5 @@ function CreateDisplay(id, width, height, center, border) {
         document.body.appendChild(canvas);
     }
 
-    return canvas.getContext("2d");
+    return canvas;
 }

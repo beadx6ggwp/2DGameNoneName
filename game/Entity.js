@@ -61,6 +61,7 @@ class Entity {
             this.colliderRef = new Box(this.colliderRef);
 
         this.zindex = GetValue(config, 'zindex', 10);
+
         this.aniData = GetValue(config, 'animation', null);
         if (this.aniData != null) {
             let ani = this.aniData;
@@ -75,7 +76,7 @@ class Entity {
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
             this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
         }
-        this.drawBase = false;
+        this.drawBase = GetValue(config, 'drawBase', false);;
 
 
         // need to delect
@@ -86,8 +87,9 @@ class Entity {
         this.vel.add(this.acc);
         this.pos.add(this.vel.clone().multiplyScalar(dt));
 
-        if (this.collisionToMap && this.colliderRef != null && this.world != null) {
-            boxCollisionResponseToMap(this, this.world, this.bounceToMap);
+        let tileMap = this.world.tileMap;
+        if (this.collisionToMap && this.colliderRef != null && tileMap != null) {
+            boxCollisionResponseToMap(this, tileMap, this.bounceToMap);
         }
 
         if (this.animation) {
@@ -109,12 +111,18 @@ class Entity {
         ctx.scale(this.scaleX, this.scaleY);
 
         if (this.animation) {
-            // if(this.vel.x > 0) ctx.scale(-1,1);
             this.animation.draw(ctx, -this.renderWidth / 2, -this.renderHeight / 2, this.renderWidth, this.renderHeight);
         } else if (this.drawBase) {
-            let size = 30;
             ctx.fillStyle = "rgba(255,127,127,0.5)";
-            ctx.fillRect(-size / 2, -size / 2, size, size);
+            // debugger
+            if (this.colliderRef) {
+                let c = this.colliderRef;
+                ctx.fillStyle = "rgba(127,255,255,0.3)";
+                ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+            } else {
+                let size = 30;
+                ctx.fillRect(-size / 2, -size / 2, size, size);
+            }
         }
         ctx.restore();
     }
