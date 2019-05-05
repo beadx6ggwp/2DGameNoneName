@@ -166,8 +166,8 @@ function boxCollisionResponseToMap(gameObj, map, bounce = false) {
         let checkObj = new Box(col * map.tileWidth, row * map.tileHeight, map.tileWidth, map.tileHeight);
         let result = rectCollisionResponse(checkObj, collider);
         if (result.touch) {
-            gameObj.pos.x += result.MTV.x * 1.1;
-            gameObj.pos.y += result.MTV.y * 1.1;
+            gameObj.pos.x += result.MTV.x * 1.0001;
+            gameObj.pos.y += result.MTV.y * 1.0001;
 
             if (bounce && !isDeal) {
                 mtvBounce2(gameObj, result.MTV)

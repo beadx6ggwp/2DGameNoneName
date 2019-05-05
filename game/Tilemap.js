@@ -17,8 +17,9 @@ class TileMap {
         let th = this.tileHeight;
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
-                let x = (col * tw);
-                let y = (row * th);
+                // 0502-1
+                let x = (col * tw) + tw / 2;
+                let y = (row * th) + th / 2;
                 for (let i = 0; i < this.layers.length; i++) {
                     let layer = this.layers[i];
                     let tileIndex = this.getTileWithLayer(i, row, col) - 1;
