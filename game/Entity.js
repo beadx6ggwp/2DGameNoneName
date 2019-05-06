@@ -76,7 +76,10 @@ class Entity {
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
             this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
         }
-        this.drawBase = GetValue(config, 'drawBase', false);;
+        
+        this.drawBase = GetValue(config, 'drawBase', false);
+        this.defaultSize = GetValue(config, 'defaultSize', 30);
+        this.defaultColor = GetValue(config, 'defaultColor', 'rgba(255,127,127,0.5)');
 
 
         // need to delect
@@ -105,6 +108,9 @@ class Entity {
     }
 
     draw(ctx, interp) {
+        if (world.camera) {
+            if (!world.camera.checkInView(this)) return
+        }
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
         ctx.rotate(this.rotate * Math.PI / 180);
@@ -113,15 +119,13 @@ class Entity {
         if (this.animation) {
             this.animation.draw(ctx, -this.renderWidth / 2, -this.renderHeight / 2, this.renderWidth, this.renderHeight);
         } else if (this.drawBase) {
-            ctx.fillStyle = "rgba(255,127,127,0.5)";
+            ctx.fillStyle = this.defaultColor;
             // debugger
             if (this.colliderRef) {
                 let c = this.colliderRef;
-                ctx.fillStyle = "rgba(127,255,255,0.3)";
                 ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
             } else {
-                let size = 30;
-                ctx.fillRect(-size / 2, -size / 2, size, size);
+                ctx.fillRect(-this.defaultSize / 2, -this.defaultSize / 2, this.defaultSize, this.defaultSize);
             }
         }
         ctx.restore();
@@ -133,5 +137,14 @@ class Entity {
         let collider = this.colliderRef.clone();
         collider.pos.add(this.pos);
         return collider;
+    }
+    getRenderBox() {
+        if (this.animation) {
+            return new Box(this.pos.x - this.renderWidth / 2, this.pos.y - this.renderHeight / 2, this.renderWidth, this.renderHeight);
+        }
+        if (this.colliderRef) {
+            return this.getCollisionBox();
+        }
+        return new Box(this.pos.x - this.defaultSize / 2, this.pos.y - this.defaultSize / 2, this.defaultSize, this.defaultSize);
     }
 }

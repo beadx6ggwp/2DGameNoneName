@@ -82,6 +82,7 @@ function Timer(callback, step) {
     var defaultFPS = 60;
 
     var fps = defaultFPS,
+        actualFPS = 0,
         lastFpsUpdate = 0,
         framesThisSecond = 0,
         alpha = 0.25;
@@ -97,6 +98,7 @@ function Timer(callback, step) {
 
         if (isRunning) {
             accumulator += (timestamp - lastTime) / 1000;
+            actualFPS = 1000 / (timestamp - lastTime);
             lastTime = timestamp;
         }
 

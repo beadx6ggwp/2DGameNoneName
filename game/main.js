@@ -9,6 +9,12 @@ var asset;
 var player;
 
 var debugMode = false;
+// list:entity name
+// isInRange:show list or ignore
+var debug_entity_conf = {
+    list: ['tile'],
+    isInRange: false
+}
 
 function preload() {
     console.log("PreLoad...");
@@ -62,8 +68,10 @@ function init() {
     world.addGameObj(player);
 
     let cameraConfig = {
-        width: world.width,
-        height: world.height,
+        world: world,
+        offsetToCenter: true,
+        // width: world.width,
+        // height: world.height,
         traceRange: {
             width: 400,
             height: 300
@@ -95,7 +103,8 @@ function init() {
             }
         },
         zindex: 9,
-        drawBase: true
+        drawBase: true,
+        defaultColor: 'rgba(127,255,255,0.5)'
     };
     let actionBox2 = {
         name: 'actionBox',
@@ -120,7 +129,8 @@ function init() {
             }
         },
         zindex: 9,
-        drawBase: true
+        drawBase: true,
+        defaultColor: 'rgba(127,255,255,0.5)'
     };
 
     world.addGameObj(new Entity(actionBox1));
@@ -176,7 +186,8 @@ function draw(ctx, interp) {
     // 假設camera(100, 0)、BoxA(10,0)、BoxB(120,0)
     // 那麼在攝影視角轉換的時候，相當於整個地圖往左移動100px，BoxA(-90, 0)、BoxB(20, 0)，所以畫面只看到BoxB
     // 要轉換回真實座標的話，只要加回去camera.pos即可
-    ctx.translate(-camera.pos.x, -camera.pos.y);
+    // ctx.translate(-camera.pos.x, -camera.pos.y);
+    ctx.translate(-camera.renderPos.x, -camera.renderPos.y);
 
     let entities = world.gameObjs;
 
@@ -190,31 +201,39 @@ function draw(ctx, interp) {
 
     if (debugMode)
         showDebugInfo(ctx);
+    drawString(ctx, 'FPS : ' + world.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 }
 
 function showDebugInfo(ctx) {
     // debug
     let camera = world.camera;
     ctx.save();
-    ctx.translate(-camera.pos.x, -camera.pos.y);
+    // ctx.translate(-camera.pos.x, -camera.pos.y);
+    ctx.translate(-camera.renderPos.x, -camera.renderPos.y);
 
     let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
     ctx.strokeStyle = "rgba(255,0,0,1)";
     ctx.strokeRect(center.x - camera.traceRange.x / 2, center.y - camera.traceRange.y / 2, camera.traceRange.x, camera.traceRange.y);
 
     let entities = world.gameObjs;
+    let conf = debug_entity_conf;
     for (const entity of entities) {
+        // 物體為要顯示時，只要在list就不跳過，物體為要排除顯示的話，只要在list中就continue
+        if ((conf.isInRange) ^ (conf.list.indexOf(entity.name) != -1)) continue
         ctx.save();
         // start
         ctx.translate(entity.pos.x, entity.pos.y);
 
+        // image size
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.strokeRect(-entity.renderWidth / 2, -entity.renderHeight / 2, entity.renderWidth, entity.renderHeight);
 
+        // center
         let boxhalf = 2;
         ctx.fillStyle = "rgba(255,0,0,0.8)";
         ctx.fillRect(- boxhalf / 2, - boxhalf / 2, boxhalf, boxhalf);
 
+        // collision box range
         if (entity.colliderRef) {
             let c = entity.colliderRef;
             ctx.fillStyle = "rgba(255,255,127,0.3)";
@@ -240,7 +259,6 @@ function showDebugInfo(ctx) {
         for (let col = start.x; col < end.x; col++) {
             let x = (col * tw);
             let y = (row * th);
-            let layer = map.collision;
             let tile = map.getCollisionTile(row, col);
             if (tile == 0) continue;
             ctx.fillStyle = "rgba(255,255,127,0.3)";
@@ -250,12 +268,15 @@ function showDebugInfo(ctx) {
         }
     }
 
+    // show camera view range
+    ctx.strokeStyle = "#FFF";
+    ctx.strokeRect(camera.pos.x, camera.pos.y, camera.width, camera.height)
+
     let r = 40;
     let mousePos = camera.getMousePos(world.mousePos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
     ctx.restore();
 
-    drawString(ctx, 'FPS : ' + world.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
 }
 
 

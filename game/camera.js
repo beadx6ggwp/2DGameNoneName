@@ -96,8 +96,17 @@ class Camera extends Entity {
         let _traceRange = GetValue(config, 'traceRange', { width: 0, height: 0 });
         this.traceRange = new Vector(_traceRange.width || 0, _traceRange.height || 0);
 
-        this.traceSpeed = GetValue(config, 'traceSpeed', 300);;
+        this.traceSpeed = GetValue(config, 'traceSpeed', 300);
+
+        this.offset = GetValue(config, 'offset', new Vector())
+        this.isOffsetToCenter = GetValue(config, 'offsetToCenter', false);
+        if (this.isOffsetToCenter) this.offsetToCenter();
+
         this.pos = new Vector();// leftTop
+        this.renderPos = new Vector();
+    }
+    offsetToCenter() {
+        this.offset = new Vector(this.world.width / 2 - this.width / 2, this.world.height / 2 - this.height / 2);
     }
 
     update(dt) {
@@ -166,7 +175,6 @@ class Camera extends Entity {
                     this.pos.y -= speed;
                 }
             }
-
         }
 
         // limit min and max
@@ -179,12 +187,26 @@ class Camera extends Entity {
 
         this.pos.x = Math.floor(this.pos.x);
         this.pos.y = Math.floor(this.pos.y);
+
+        this.renderPos.x = this.pos.x - this.offset.x;
+        this.renderPos.y = this.pos.y - this.offset.y;
     }
     getMousePos(gameMouse) {
         // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移
         return {
-            x: Math.floor(this.pos.x + gameMouse.x),
-            y: Math.floor(this.pos.y + gameMouse.y)
+            x: Math.floor(this.renderPos.x + gameMouse.x),
+            y: Math.floor(this.renderPos.y + gameMouse.y)
         }
+    }
+    getCollisionBox() {
+        // 更新碰撞盒位置
+        let collider = new Box(this.pos.x, this.pos.y, this.width, this.height);
+        return collider;
+    }
+    checkInView(entity) {
+        let box1 = new Box(this.pos.x, this.pos.y, this.width, this.height);
+        let box2 = entity.getRenderBox();
+
+        return rect2rect(box1, box2);
     }
 }

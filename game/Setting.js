@@ -1,7 +1,7 @@
 // core setting
 var gameConfig = {
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 800,
     canvasOnCenter: 1,
     updateStep: 1 / 120 // 更新頻率太低會導之碰撞回饋抖動
 }
@@ -16,7 +16,10 @@ var assetSource = {
         'coin': 'asset/img/coin.png',
         'robin': 'asset/img/robin.png',
         'swoosh': 'asset/img/swoosh.png',
-        'tileset': 'asset/img/tileset.png'
+        'tileset': 'asset/img/tileset.png',
+        // 'imgtest1':'http://127.0.0.1:8080/'
+        // 'ttt':'https://i.imgur.com/Ih4eMyv.gif',
+        // 'ttt2':'https://i.imgur.com/ssZ6BcJ.gif'
     },
     sounds: {
 

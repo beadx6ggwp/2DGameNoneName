@@ -102,7 +102,7 @@ class Player extends Entity {
                 this.animation.setStartEnd(this.aniData.action[this.action])
                 break;
             case 'role':
-                createParticles(this.world, this.pos.x, this.pos.y, 3)
+                // createParticles(this.world, this.pos.x, this.pos.y, 3)
                 if (Alarm.check('roleTime') >= 0) {
                     Alarm.setTime('roleCoolDown', 0.5 * 1000);
                     this.vel.multiplyScalar(0);
