@@ -106,7 +106,10 @@ class Camera extends Entity {
         this.renderPos = new Vector();
     }
     offsetToCenter() {
-        this.offset = new Vector(this.world.width / 2 - this.width / 2, this.world.height / 2 - this.height / 2);
+        // 渲染放大，所以offset也要修改
+        let sizeW = this.width / 2 * this.world.renderScale.x;
+        let sizeH = this.height / 2 * this.world.renderScale.y;
+        this.offset = new Vector(this.world.width / 2 - sizeW, this.world.height / 2 - sizeH);
     }
 
     update(dt) {
@@ -184,19 +187,22 @@ class Camera extends Entity {
         // if (this.pos.y < 0) this.pos.y = 0;
         // if (this.pos.x + this.width > maxW) this.pos.x = maxW - this.width;
         // if (this.pos.y + this.height > maxH) this.pos.y = maxH - this.height;
+        //  Math.floor()
+        this.pos.x = (this.pos.x);
+        this.pos.y = (this.pos.y);
 
-        this.pos.x = Math.floor(this.pos.x);
-        this.pos.y = Math.floor(this.pos.y);
-
+        this.moveView();
+    }
+    moveView() {
         this.renderPos.x = this.pos.x - this.offset.x;
         this.renderPos.y = this.pos.y - this.offset.y;
     }
-    getMousePos(gameMouse) {
+    getMousePos(mouseVec) {
         // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移
-        return {
-            x: Math.floor(this.renderPos.x + gameMouse.x),
-            y: Math.floor(this.renderPos.y + gameMouse.y)
-        }
+        return new Vector(
+            Math.floor((this.renderPos.x + mouseVec.x) / this.world.renderScale.x),
+            Math.floor((this.renderPos.y + mouseVec.y) / this.world.renderScale.y)
+        )
     }
     getCollisionBox() {
         // 更新碰撞盒位置

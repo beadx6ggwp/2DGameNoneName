@@ -24,11 +24,17 @@ class Game {
         this.ctx = CreateDisplayEnvironment(this.canvas, this);
         this.ctx.imageSmoothingEnabled = false;
         // 目前縮放問題不大，但是滑鼠座標會偏掉
-        this.ctx.scale(1, 1);
+        this.renderScale = GetValue(config, 'renderScale', { x: 1, y: 1 })
+        this.ctx.scale(this.renderScale.x, this.renderScale.y);
 
         // sitting input
         this.keys = {}
-        this.mousePos = { x: 0, y: 0, isDown: false };
+        this.mouse = {
+            downPos: new Vector(),
+            pos: new Vector(),
+            upPos: new Vector(),
+            isDown: false
+        };
 
         // settin gameObj
         this.Alarm = new Alarm();
@@ -289,16 +295,23 @@ class Alarm2 {
 function CreateDisplayEnvironment(canvas, world) {
     document.addEventListener("keydown", (e) => world.keys[e.keyCode] = true, false);
     document.addEventListener("keyup", (e) => delete world.keys[e.keyCode], false);
-    document.addEventListener("mousedown", (e) => world.mousePos.isDown = true, false);
-    document.addEventListener("mouseup", (e) => world.mousePos.isDown = false, false);
+    document.addEventListener("mousedown", (e) => {
+        world.mouse.isDown = true;
+        world.mouse.downPos = getCtxMousePos(e, world.ctx);
+    }, false);
+    document.addEventListener("mouseup", (e) => {
+        world.mouse.isDown = false;
+        world.mouse.upPos = getCtxMousePos(e, world.ctx);
+    }, false);
     document.addEventListener("mousemove", (e) => {
-        // var rect = world.canvasRect;
-        var rect = world.ctx.canvas.getBoundingClientRect();
-        // Math.floor(rect.left)
-        world.mousePos.x = e.clientX - Math.floor(rect.left);
-        world.mousePos.y = e.clientY - Math.floor(rect.top);
+        world.mouse.pos = getCtxMousePos(e, world.ctx);
     }, false);
     return canvas.getContext('2d');
+}
+
+function getCtxMousePos(e, ctx) {
+    var rect = ctx.canvas.getBoundingClientRect();
+    return new Vector(e.clientX - Math.floor(rect.left), e.clientY - Math.floor(rect.top));
 }
 
 function CreateCanvas(id, width, height, center, border) {

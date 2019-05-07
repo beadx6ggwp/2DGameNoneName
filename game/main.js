@@ -145,8 +145,10 @@ function main() {
     world.start();
 }
 
+
 // dt: sec, 1/120 like 0.008333...
 function update(dt, tickcount) {
+
     // console.log(dt);
     let entities = world.gameObjs;
     for (const entity of entities) {
@@ -170,6 +172,8 @@ function update(dt, tickcount) {
         if (entity.isDead) entities.splice(i, 1);
     }
     // camera.follow(dt, player);
+
+    cameraControl();
 
 }
 
@@ -202,6 +206,24 @@ function draw(ctx, interp) {
     if (debugMode)
         showDebugInfo(ctx);
     drawString(ctx, 'FPS : ' + world.loop.FPS().toFixed(3) + "", 0, 0, "#000", 10);
+}
+
+function cameraControl() {
+    // 待解決，拖動地圖，會因為moveView導致滑鼠座標一直疊加
+    let camera = world.camera;
+    let keys = world.keys;
+    let inputDir = new Vector();
+    if (keys['87']) inputDir.y = -1;
+    if (keys['83']) inputDir.y = 1;
+    if (keys['65']) inputDir.x = -1;
+    if (keys['68']) inputDir.x = 1;
+    if (inputDir.x != 0 || inputDir.y != 0) {
+        camera.target = null;
+        inputDir.norm();
+        inputDir.setLength(5);
+        camera.pos.add(inputDir);
+        world.camera.moveView();
+    }
 }
 
 function showDebugInfo(ctx) {
@@ -273,10 +295,9 @@ function showDebugInfo(ctx) {
     ctx.strokeRect(camera.pos.x, camera.pos.y, camera.width, camera.height)
 
     let r = 40;
-    let mousePos = camera.getMousePos(world.mousePos);
+    let mousePos = camera.getMousePos(world.mouse.pos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
     ctx.restore();
-
 }
 
 
@@ -296,11 +317,20 @@ window.addEventListener("keydown", (e) => {
         player.zindex--;
         console.log(`player.zindex: ${player.zindex}`);
     }
+
+    if (e.keyCode == 82) {
+        world.camera.target = player;
+    }
 }, false);
 
 window.addEventListener("keyup", (e) => {
 }, false);
-
+window.addEventListener("mousedown", (e) => {
+}, false);
+window.addEventListener("mouseup", (e) => {
+}, false);
+window.addEventListener("mousemove", (e) => {
+}, false);
 //---------------------
 window.onload = function () {
     preload()
