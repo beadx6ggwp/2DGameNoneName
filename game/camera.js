@@ -98,18 +98,26 @@ class Camera extends Entity {
 
         this.traceSpeed = GetValue(config, 'traceSpeed', 300);
 
+        this.pos = new Vector();// leftTop
+        this.renderPos = new Vector();
+
         this.offset = GetValue(config, 'offset', new Vector())
         this.isOffsetToCenter = GetValue(config, 'offsetToCenter', false);
         if (this.isOffsetToCenter) this.offsetToCenter();
 
-        this.pos = new Vector();// leftTop
-        this.renderPos = new Vector();
+        this.collider = {
+            pos: this.pos,
+            w: this.width,
+            h: this.height
+        };
     }
     offsetToCenter() {
         // 渲染放大，所以offset也要修改
-        let sizeW = this.width / 2 * this.world.renderScale.x;
-        let sizeH = this.height / 2 * this.world.renderScale.y;
-        this.offset = new Vector(this.world.width / 2 - sizeW, this.world.height / 2 - sizeH);
+        let size = this.screenToWorld(new Vector(this.world.width, this.world.height))
+        let sizeW = size.x / 2 - this.width / 2;
+        let sizeH = size.y / 2 - this.height / 2;
+        this.offset = new Vector(sizeW, sizeH);
+        // this.offset = new Vector(100,100)/ this.world.renderScale.x / this.world.renderScale.y
     }
 
     update(dt) {
@@ -193,26 +201,29 @@ class Camera extends Entity {
 
         this.moveView();
     }
+
+    worldToScreen(worldPos) {
+        let pos = new Vector(
+            Math.floor((worldPos.x - this.renderPos.x) / this.world.renderScale.x),
+            Math.floor((worldPos.y - this.renderPos.y) / this.world.renderScale.y)
+        );
+        return pos;
+    }
+    screenToWorld(screenPos) {
+        let pos = new Vector(
+            Math.floor((screenPos.x / this.world.renderScale.x + this.renderPos.x)),
+            Math.floor((screenPos.y / this.world.renderScale.y + this.renderPos.y))
+        );
+        return pos;
+    }
+
     moveView() {
         this.renderPos.x = this.pos.x - this.offset.x;
         this.renderPos.y = this.pos.y - this.offset.y;
-    }
-    getMousePos(mouseVec) {
-        // 問題:當ctx.scale假設要縮放1024x768，這時滑鼠位置會有偏移
-        return new Vector(
-            Math.floor((this.renderPos.x + mouseVec.x) / this.world.renderScale.x),
-            Math.floor((this.renderPos.y + mouseVec.y) / this.world.renderScale.y)
-        )
     }
     getCollisionBox() {
         // 更新碰撞盒位置
         let collider = new Box(this.pos.x, this.pos.y, this.width, this.height);
         return collider;
-    }
-    checkInView(entity) {
-        let box1 = new Box(this.pos.x, this.pos.y, this.width, this.height);
-        let box2 = entity.getRenderBox();
-
-        return rect2rect(box1, box2);
     }
 }

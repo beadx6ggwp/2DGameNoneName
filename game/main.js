@@ -63,6 +63,7 @@ function init() {
             x: -16, y: 0,
             w: 32, h: 24
         },
+        // collisionToMap:false,
         animation: player1Animation
     });
     world.addGameObj(player);
@@ -173,7 +174,7 @@ function update(dt, tickcount) {
     }
     // camera.follow(dt, player);
 
-    cameraControl();
+    // cameraControl();
 
 }
 
@@ -193,12 +194,14 @@ function draw(ctx, interp) {
     // ctx.translate(-camera.pos.x, -camera.pos.y);
     ctx.translate(-camera.renderPos.x, -camera.renderPos.y);
 
+    // world.tileMap.drawMapWithCamera(ctx, world.camera);
     let entities = world.gameObjs;
 
     entities.sort((a, b) => a.zindex - b.zindex);
     for (const entity of entities) {
         entity.draw(ctx);
     }
+
 
     ctx.restore();
 
@@ -236,6 +239,15 @@ function showDebugInfo(ctx) {
     let center = new Vector(camera.pos.x + camera.width / 2, camera.pos.y + camera.height / 2);
     ctx.strokeStyle = "rgba(255,0,0,1)";
     ctx.strokeRect(center.x - camera.traceRange.x / 2, center.y - camera.traceRange.y / 2, camera.traceRange.x, camera.traceRange.y);
+
+    ctx.strokeStyle = "rgba(255,0,0,0.8)";
+    ctx.beginPath();
+    ctx.moveTo(center.x - camera.traceRange.x / 2, center.y);
+    ctx.lineTo(center.x + camera.traceRange.x / 2, center.y);
+    ctx.moveTo(center.x, center.y - camera.traceRange.y / 2);
+    ctx.lineTo(center.x, center.y + camera.traceRange.y / 2);
+    ctx.stroke();
+
 
     let entities = world.gameObjs;
     let conf = debug_entity_conf;
@@ -295,9 +307,19 @@ function showDebugInfo(ctx) {
     ctx.strokeRect(camera.pos.x, camera.pos.y, camera.width, camera.height)
 
     let r = 40;
-    let mousePos = camera.getMousePos(world.mouse.pos);
+    let mousePos = camera.screenToWorld(world.mouse.pos);
     drawString(ctx, mousePos.x + ", " + mousePos.y, mousePos.x, mousePos.y - 15, "#000", 10);
     ctx.restore();
+
+    let w = world.width / this.world.renderScale.x;
+    let h = world.height / this.world.renderScale.y;
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.beginPath();
+    ctx.moveTo(w / 2, 0);
+    ctx.lineTo(w / 2, h);
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
 }
 
 
@@ -331,6 +353,17 @@ window.addEventListener("mouseup", (e) => {
 }, false);
 window.addEventListener("mousemove", (e) => {
 }, false);
+
+// window.addEventListener("wheel", (e) => {
+//     if (e.deltaY < 0) {
+//         world.changeScale(2, 2)
+//     } else {
+//         world.changeScale(0.5, 0.5)
+//     }
+//     // world.camera.offsetToCenter();
+//     world.camera.moveView();
+//     // console.log(e.deltaY, scale)
+// }, false);
 //---------------------
 window.onload = function () {
     preload()

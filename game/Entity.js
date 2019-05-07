@@ -75,8 +75,9 @@ class Entity {
             let image = asset.imgs[ani.imgName];
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
             this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
+            this.renderBox = new Box(0, 0, this.renderWidth, this.renderHeight);
         }
-        
+
         this.drawBase = GetValue(config, 'drawBase', false);
         this.defaultSize = GetValue(config, 'defaultSize', 30);
         this.defaultColor = GetValue(config, 'defaultColor', 'rgba(255,127,127,0.5)');
@@ -108,8 +109,21 @@ class Entity {
     }
 
     draw(ctx, interp) {
-        if (world.camera) {
-            if (!world.camera.checkInView(this)) return
+        // 莫名耗效能，目前觀察是tile其實沒必要這樣檢查，浪費效能，30x40個tile都new Box()會讓GC負荷太重
+        // 讓tile繼承entity，讓他根據camera.pos.x / tile.width之類的方法，檢查有沒有碰到來塞選繪製
+        if (this.world.camera) {
+            if (!this.checkInView(world.camera)) return
+            // let camera = this.world.camera;
+            // if (this.name == 'tile') {
+            //     // 目前這樣比較不會吃效能(GC)，所以tile不需要renderBox判斷是否在顯示範圍，直接判斷即可
+            //     // 而checkInView可能從camera改放在entity中比較好，根據不同物件處理不同的可視判斷
+            //     let tw = this.world.tileMap.tileWidth;
+            //     let th = this.world.tileMap.tileHeight;
+            //     if (this.pos.x + tw < camera.pos.x || this.pos.x - tw > camera.pos.x + camera.width ||
+            //         this.pos.y + th < camera.pos.y || this.pos.y - th > camera.pos.y + camera.height) {
+            //         return;
+            //     }
+            // } else if (!this.checkInView(world.camera)) return
         }
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
@@ -146,5 +160,12 @@ class Entity {
             return this.getCollisionBox();
         }
         return new Box(this.pos.x - this.defaultSize / 2, this.pos.y - this.defaultSize / 2, this.defaultSize, this.defaultSize);
+    }
+    
+    checkInView(camera) {
+        let box1 = camera.getCollisionBox();
+        let box2 = this.getRenderBox();
+
+        return rect2rect(box1, box2);
     }
 }

@@ -23,9 +23,9 @@ class Game {
         this.canvas = CreateCanvas("GameCanvas", this.width, this.height, this.canvasOnCenter);
         this.ctx = CreateDisplayEnvironment(this.canvas, this);
         this.ctx.imageSmoothingEnabled = false;
-        // 目前縮放問題不大，但是滑鼠座標會偏掉
-        this.renderScale = GetValue(config, 'renderScale', { x: 1, y: 1 })
-        this.ctx.scale(this.renderScale.x, this.renderScale.y);
+        this.renderScale = { x: 1, y: 1 };
+        let scale = GetValue(config, 'renderScale', { x: 1, y: 1 });
+        this.changeScale(scale.x, scale.y);
 
         // sitting input
         this.keys = {}
@@ -53,6 +53,13 @@ class Game {
             },
             render: (interp) => callback.render(this.ctx, interp)
         }, this.updateStep);
+    }
+
+    changeScale(scaleX, scaleY) {
+        // 目前直接從設定開新遊戲縮放沒問題，但動態縮放會出問題
+        this.renderScale.x *= scaleX;
+        this.renderScale.y *= scaleY;
+        this.ctx.scale(scaleX, scaleY);
     }
 
     start() {

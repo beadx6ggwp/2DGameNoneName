@@ -3,7 +3,7 @@ var gameConfig = {
     width: 1000,
     height: 750,
     canvasOnCenter: 1,
-    renderScale: { x: 1, y: 1},
+    renderScale: { x: 1, y: 1 },
     updateStep: 1 / 120 // 更新頻率太低會導之碰撞回饋抖動
 }
 
@@ -26,7 +26,7 @@ var assetSource = {
 
     },
     jsons: {
-        'testJSON': 'asset/data/testJSON.json'
+        // 'testJSON': 'asset/data/testJSON.json'
     }
 };
 
