@@ -38,14 +38,13 @@ function init() {
     // map.addToRenderList(entities);
     world.tileMap = map;
 
-    for (let index = 0; index < 10; index++) {
+    for (let index = 0; index < 50; index++) {
         let test = {
             hp: 2,
             pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
             vel: { x: randomInt(-100, 100), y: randomInt(-100, 100) },
             collider: {
-                x: -11, y: -10,
-                w: 22, h: 20
+                polygon: [{ x: -11, y: -10 }, { x: 11, y: -10 }, { x: 11, y: 10 }, { x: -11, y: 10 }]
             },
             bounceToMap: true,
             animation: robinAnimation
@@ -60,8 +59,9 @@ function init() {
         acc: { x: 0, y: 0 },
         moveSpeed: 200,
         collider: {
-            x: -16, y: 0,
-            w: 32, h: 24
+            polygon: [{ x: -16, y: 0 }, { x: 16, y: 0 }, { x: 16, y: 24 }, { x: -16, y: 24 }],
+            offset: { x: 0, y: 0 }
+            // radius: 20
         },
         // collisionToMap:false,
         animation: player1Animation
@@ -81,61 +81,61 @@ function init() {
     }
     world.setCamera(new Camera(cameraConfig));
 
-    let actionBox1 = {
-        name: 'actionBox',
-        pos: {
-            x: 300,
-            y: 300
-        },
-        collider: {
-            x: -20, y: -20,
-            w: 40, h: 40
-        },
-        collisionToMap: false,
-        bounceWithMap: false,
-        hitActionData: {
-            parent: null,
-            target: ['player'],
-            action: function (ent1, ent2) {
-                if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
-                    ent2.zindex = 1;
-                    ent2.moveSpeed = 200;
-                }
-            }
-        },
-        zindex: 9,
-        drawBase: true,
-        defaultColor: 'rgba(127,255,255,0.5)'
-    };
-    let actionBox2 = {
-        name: 'actionBox',
-        pos: {
-            x: 400,
-            y: 400
-        },
-        collider: {
-            x: -20, y: -20,
-            w: 40, h: 40
-        },
-        collisionToMap: false,
-        bounceWithMap: false,
-        hitActionData: {
-            parent: null,
-            target: ['player'],
-            action: function (ent1, ent2) {
-                if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
-                    ent2.zindex = 10;
-                    ent2.moveSpeed = 500;
-                }
-            }
-        },
-        zindex: 9,
-        drawBase: true,
-        defaultColor: 'rgba(127,255,255,0.5)'
-    };
+    // let actionBox1 = {
+    //     name: 'actionBox',
+    //     pos: {
+    //         x: 300,
+    //         y: 300
+    //     },
+    //     collider: {
+    //         x: -20, y: -20,
+    //         w: 40, h: 40
+    //     },
+    //     collisionToMap: false,
+    //     bounceWithMap: false,
+    //     hitActionData: {
+    //         parent: null,
+    //         target: ['player'],
+    //         action: function (ent1, ent2) {
+    //             if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+    //                 ent2.zindex = 1;
+    //                 ent2.moveSpeed = 200;
+    //             }
+    //         }
+    //     },
+    //     zindex: 9,
+    //     drawBase: true,
+    //     defaultColor: 'rgba(127,255,255,0.5)'
+    // };
+    // let actionBox2 = {
+    //     name: 'actionBox',
+    //     pos: {
+    //         x: 400,
+    //         y: 400
+    //     },
+    //     collider: {
+    //         x: -20, y: -20,
+    //         w: 40, h: 40
+    //     },
+    //     collisionToMap: false,
+    //     bounceWithMap: false,
+    //     hitActionData: {
+    //         parent: null,
+    //         target: ['player'],
+    //         action: function (ent1, ent2) {
+    //             if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+    //                 ent2.zindex = 10;
+    //                 ent2.moveSpeed = 500;
+    //             }
+    //         }
+    //     },
+    //     zindex: 9,
+    //     drawBase: true,
+    //     defaultColor: 'rgba(127,255,255,0.5)'
+    // };
 
-    world.addGameObj(new Entity(actionBox1));
-    world.addGameObj(new Entity(actionBox2));
+    // world.addGameObj(new Entity(actionBox1));
+    // world.addGameObj(new Entity(actionBox2));
 
     main();
 }
@@ -174,7 +174,7 @@ function update(dt, tickcount) {
     }
     // camera.follow(dt, player);
 
-    // cameraControl();
+    cameraControl();
 
 }
 
@@ -267,14 +267,15 @@ function showDebugInfo(ctx) {
         ctx.fillStyle = "rgba(255,0,0,0.8)";
         ctx.fillRect(- boxhalf / 2, - boxhalf / 2, boxhalf, boxhalf);
 
+        ctx.restore();
+
         // collision box range
         if (entity.colliderRef) {
-            let c = entity.colliderRef;
-            ctx.fillStyle = "rgba(255,255,127,0.3)";
-            ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+            entity.collider.fill(ctx);
+            // ctx.fillStyle = "rgba(255,255,127,0.3)";
+            // ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
         }
 
-        ctx.restore();
     }
 
     // 地圖碰撞盒

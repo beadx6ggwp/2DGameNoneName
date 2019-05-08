@@ -57,8 +57,9 @@ class Entity {
         */
         this.hitActionData = GetValue(config, 'hitActionData', null);
         this.colliderRef = GetValue(config, 'collider', null);
-        if (this.colliderRef != null)
-            this.colliderRef = new Box(this.colliderRef);
+        if (this.colliderRef != null) {
+            this.createShape(this.colliderRef);
+        }
 
         this.zindex = GetValue(config, 'zindex', 10);
 
@@ -85,6 +86,19 @@ class Entity {
 
         // need to delect
         this.isDead = false;
+    }
+
+    createShape(data) {
+        this.colliderOffset = data.offset || new Vector();
+        if (data.polygon) {
+            let vertices = []
+            for (const v of data.polygon) {
+                vertices.push(new Vector(v.x, v.y));
+            }
+            this.collider = new Polygon(this.pos.clone(), vertices)
+        } else if (data.radius) {
+            this.collider = new Circle(this.pos.clone(), data.radius)
+        }
     }
 
     update(dt, tick) {
@@ -147,10 +161,14 @@ class Entity {
 
     getCollisionBox() {
         // 更新碰撞盒位置
-        if (!this.colliderRef) return null;
-        let collider = this.colliderRef.clone();
-        collider.pos.add(this.pos);
-        return collider;
+        // if (!this.colliderRef) return null;
+        // let collider = this.colliderRef.clone();
+        // collider.pos.add(this.pos);
+        this.collider.pos.x = this.pos.x;
+        this.collider.pos.y = this.pos.y;
+        this.collider.pos.x += this.colliderOffset.x
+        this.collider.pos.y += this.colliderOffset.y
+        return this.collider;
     }
     getRenderBox() {
         if (this.animation) {
@@ -161,11 +179,20 @@ class Entity {
         }
         return new Box(this.pos.x - this.defaultSize / 2, this.pos.y - this.defaultSize / 2, this.defaultSize, this.defaultSize);
     }
-    
+
     checkInView(camera) {
         let box1 = camera.getCollisionBox();
         let box2 = this.getRenderBox();
 
         return rect2rect(box1, box2);
     }
+}
+
+function boxToPolygon(pos, w, h) {
+    return new Polygon(pos, [
+        new Vector(-w / 2, -h / w),
+        new Vector(w / 2, -h / w),
+        new Vector(w / 2, h / w),
+        new Vector(-w / 2, h / w)
+    ]);
 }

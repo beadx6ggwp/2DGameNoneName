@@ -137,17 +137,20 @@ class Player extends Entity {
 
     createAtkConfig() {
         let dir = this.lastDir.clone().norm();
-        let mycollider = this.colliderRef;
+        let mycollider = this.collider.getBoundingBox();
         let scale = swordAnimation.renderScale;
+        let box = new BoundingBox(-15 * scale, -15 * scale, 30 * scale, 30 * scale)// hitbox
         let collider = {
-            x: -15 * scale, y: -15 * scale,
-            w: 30 * scale, h: 30 * scale
+            // polygon: [{ x: box.left, y: box.top }, { x: box.left + box.width, y: box.top }, { x: box.left + box.width, y: box.top + box.height }, { x: box.left, y: box.top + box.height }]
+            // x: -15 * scale, y: -15 * scale,
+            // w: 30 * scale, h: 30 * scale
+            radius: 25
         };
         let atkConfig = {
             name: 'player_atk',
             pos: {
-                x: this.pos.x + dir.x * mycollider.w,
-                y: this.pos.y + dir.y * (collider.h / 2 + (dir.y > 0 && dir.y != 0 ? 5 : -5)) * (1 - Math.abs(dir.x)) //1-dir.x 防止斜者打
+                x: this.pos.x + dir.x * mycollider.width,
+                y: this.pos.y + dir.y * (box.height / 2 + (dir.y > 0 && dir.y != 0 ? 5 : -5)) * (1 - Math.abs(dir.x)) //1-dir.x 防止斜者打
             },
             survivalMode: true,
             collider: collider,
@@ -159,7 +162,18 @@ class Player extends Entity {
                 parent: this,
                 target: ['enemy1'],
                 action: function (ent1, ent2) {
-                    if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
+                    // debugger
+                    let collider1 = ent1.getCollisionBox();
+                    let collider2 = ent2.getCollisionBox();
+                    // debugger
+                    let box1 = collider1.getBoundingBox();
+                    let box2 = collider2.getBoundingBox();
+
+                    if (box1.left + box1.width < box2.left || box2.left + box2.width < box1.left ||
+                        box1.top + box1.height < box2.top || box2.top + box2.height < box1.top)
+                        return;
+                    let mtv = collider1.collideWith(collider2);
+                    if (mtv.axis) {
                         // 對Entity加入Actin系統，在敵人被往右打的時候加入 vec(x, y)之類的加速度，持續n秒
                         let p1 = ent1.pos.clone();
                         let p2 = ent2.pos.clone();
