@@ -1,4 +1,4 @@
-class Player extends Entity {
+class Player2 extends Entity {
     constructor(config) {
         super(config);
 
@@ -6,7 +6,7 @@ class Player extends Entity {
         this.state = 'move';
         this.ismove = false;
         this.facing = 'down';
-        this.action = 'stand-down';
+        this.action = 'idle1';
         this.lastDir = new Vector();
 
         this.moveSpeed = GetValue(config, 'moveSpeed', 10);
@@ -15,7 +15,6 @@ class Player extends Entity {
     update(dt) {
         let Alarm = world.Alarm;
         let keys = world.keys;
-        let moveSpeed = this.moveSpeed;
         // input
         let inputDir = new Vector();
         if (keys['38']) inputDir.y = -1;
@@ -29,24 +28,72 @@ class Player extends Entity {
 
             let sec = 0.2;
             Alarm.setTime('roleTime', sec * 1000);
-            // this.vel.x = 200 / sec;
             this.vel = this.lastDir.clone().norm().setLength(100 / sec);
+
+            // this.action = 'role';
+            // this.animation.setStartEnd(this.aniData.action[this.action])
         }
 
         // if(目前沒其他狀態 && 按下 && 攻擊CD到了 && 現在還沒攻擊)
-        if (this.state == 'move' && keys['90'] && Alarm.check('attackCoolDown') == null && Alarm.check('attack') == null) {
+        // console.log(this.action)
+        if (this.state == 'move' && keys['90'] && Alarm.check('attackCoolDown') == null) {
             this.state = 'attack';
             // console.log('press atk')
 
-            let dir = this.lastDir.clone().norm();
+            this.action = 'atk1';
+            this.animation.setStartEnd(this.aniData.action[this.action])
+            this.animation.currentFrame = 0;
+            this.animation.repeat = false;
+            this.animation.setSpeed(15);
+
             let atkConfig = this.createAtkConfig();
-            atkConfig.animation.speed = 25;
+            atkConfig.animation = null;
 
             let atkObj = new Entity(atkConfig);
-            atkObj.survivalTime = atkObj.animation.animationSequence.length * atkObj.animation.frameSleep / 1000;
+            atkObj.survivalTime = this.animation.animationSequence.length * this.animation.frameSleep / 1000;
             this.world.addGameObj(atkObj);
 
-            Alarm.setTime('attack', 0.1 * 1000);// 僵直時間
+            // && Alarm.check('attack') == null
+            // Alarm.setTime('attack', 1 * 1000);// 僵直時間
+            this.vel.multiplyScalar(0);
+            this.ismove = false;
+        }
+        if (this.action == 'atk1' && keys['90'] && this.animation.currentFrame > 3) {
+            this.state = 'attack';
+
+            this.action = 'atk2';
+            this.animation.setStartEnd(this.aniData.action[this.action])
+            this.animation.currentFrame = 0;
+            this.animation.repeat = false;
+            this.animation.setSpeed(12);
+
+            let atkConfig = this.createAtkConfig();
+            atkConfig.animation = null;
+
+            let atkObj = new Entity(atkConfig);
+            atkObj.survivalTime = this.animation.animationSequence.length * this.animation.frameSleep / 1000;
+            this.world.addGameObj(atkObj);
+
+            this.vel.multiplyScalar(0);
+            this.ismove = false;
+        }
+        console.log(this.action,this.animation.currentFrame)
+        if (this.action == 'atk2' && keys['90'] && this.animation.currentFrame > 4) {
+            this.state = 'attack';
+
+            this.action = 'atk3';
+            this.animation.setStartEnd(this.aniData.action[this.action])
+            this.animation.currentFrame = 0;
+            this.animation.repeat = false;
+            this.animation.setSpeed(10);
+
+            let atkConfig = this.createAtkConfig();
+            atkConfig.animation = null;
+
+            let atkObj = new Entity(atkConfig);
+            atkObj.survivalTime = this.animation.animationSequence.length * this.animation.frameSleep / 1000;
+            this.world.addGameObj(atkObj);
+
             this.vel.multiplyScalar(0);
             this.ismove = false;
         }
@@ -74,32 +121,7 @@ class Player extends Entity {
 
         switch (this.state) {
             case 'move':
-                if (keys['38']) {
-                    this.facing = 'up';
-                }
-                else if (keys['40']) {
-                    this.facing = 'down';
-                }
-                if (keys['37']) {
-                    this.facing = 'left';
-                }
-                else if (keys['39']) {
-                    this.facing = 'right';
-                }
-
-                // 處理移動，並使每個8方向速度一致
-                if (inputDir.x != 0 || inputDir.y != 0) {
-                    // debugger
-                    this.ismove = true;
-                    this.lastDir = inputDir.clone();
-                    this.vel = inputDir.norm().setLength(moveSpeed);
-                } else {
-                    this.ismove = false;
-                    this.vel.multiplyScalar(0);
-                }
-
-                this.action = `${this.ismove ? 'walk' : 'stand'}-${this.facing}`;
-                this.animation.setStartEnd(this.aniData.action[this.action])
+                this.handleMove(inputDir)
                 break;
             case 'role':
                 // createParticles(this.world, this.pos.x, this.pos.y, 3)
@@ -110,9 +132,16 @@ class Player extends Entity {
                 }
                 break;
             case 'attack':
-                if (Alarm.check('attack') >= 0) {
+                if (this.animation.finish) {
                     Alarm.setTime('attackCoolDown', 0.3 * 1000);
                     this.state = 'move';
+
+                    this.animation.finish = false;
+                    this.animation.repeat = true;
+
+                    this.action = 'idle1';
+                    this.animation.setStartEnd(this.aniData.action[this.action])
+                    this.animation.setSpeed(10);
                 }
                 break;
             case 'shoot':
@@ -133,6 +162,39 @@ class Player extends Entity {
         ctx.restore();
 
         super.draw(ctx);
+    }
+
+    handleMove(inputDir) {
+        let keys = this.world.keys;
+        let moveSpeed = this.moveSpeed;
+        if (keys['38']) {
+            // this.facing = 'up';
+        }
+        else if (keys['40']) {
+            // this.facing = 'down';
+        }
+        if (keys['37']) {
+            this.facing = 'left';
+            this.scaleX = -1;
+        }
+        else if (keys['39']) {
+            this.facing = 'right';
+            this.scaleX = 1;
+        }
+
+        // 處理移動，並使每個8方向速度一致
+        if (inputDir.x != 0 || inputDir.y != 0) {
+            // debugger
+            this.ismove = true;
+            this.lastDir = inputDir.clone();
+            this.vel = inputDir.norm().setLength(moveSpeed);
+        } else {
+            this.ismove = false;
+            this.vel.multiplyScalar(0);
+        }
+
+        this.action = `${this.ismove ? 'walk' : 'idle1'}`;
+        this.animation.setStartEnd(this.aniData.action[this.action])
     }
 
     createAtkConfig() {
@@ -166,7 +228,12 @@ class Player extends Entity {
                     let collider1 = ent1.getCollisionBox();
                     let collider2 = ent2.getCollisionBox();
                     // debugger
-                    if (!box2box(collider1.getBoundingBox(), collider2.getBoundingBox())) return;
+                    let box1 = collider1.getBoundingBox();
+                    let box2 = collider2.getBoundingBox();
+
+                    if (box1.left + box1.width < box2.left || box2.left + box2.width < box1.left ||
+                        box1.top + box1.height < box2.top || box2.top + box2.height < box1.top)
+                        return;
                     let mtv = collider1.collideWith(collider2);
                     if (mtv.axis) {
                         // 對Entity加入Actin系統，在敵人被往右打的時候加入 vec(x, y)之類的加速度，持續n秒
@@ -187,7 +254,7 @@ class Player extends Entity {
                             dist.rotateDeg(theta);
                         }
                         // if()
-                        ent2.pos.add(dist.multiplyScalar(15));
+                        ent2.pos.add(dist.multiplyScalar(1));
                         ent2.hit(1);
                         // ent2.isDead = true;
                     }

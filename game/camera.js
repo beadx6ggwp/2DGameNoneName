@@ -105,11 +105,7 @@ class Camera extends Entity {
         this.isOffsetToCenter = GetValue(config, 'offsetToCenter', false);
         if (this.isOffsetToCenter) this.offsetToCenter();
 
-        this.collider = {
-            pos: this.pos,
-            w: this.width,
-            h: this.height
-        };
+        this.collider = new BoundingBox(this.pos.x, this.pos.y, this.width, this.height);
     }
     offsetToCenter() {
         // 渲染放大，所以offset也要修改
@@ -221,9 +217,10 @@ class Camera extends Entity {
         this.renderPos.x = this.pos.x - this.offset.x;
         this.renderPos.y = this.pos.y - this.offset.y;
     }
-    getCollisionBox() {
+    getBoundingBox() {
         // 更新碰撞盒位置
-        let collider = new Box(this.pos.x, this.pos.y, this.width, this.height);
-        return collider;
+        this.collider.left = this.pos.x;
+        this.collider.top = this.pos.y;
+        return this.collider;
     }
 }

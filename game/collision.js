@@ -109,6 +109,7 @@ function boxCollisionResponseToMap(gameObj, map, bounce = false) {
     let isDeal = false;
     // 逐一檢查有可能碰撞的tile collisionBox
     for (let i = 0; i < contactsTile.length; i++) {
+        // 之後應該要把entity collision整合出來
         const tile = contactsTile[i];
         let mtv = collider.collideWith(tile);
         if (mtv.axis) {
@@ -123,4 +124,62 @@ function boxCollisionResponseToMap(gameObj, map, bounce = false) {
             // break;
         }
     }
+}
+
+function boxCollisionResponseToMap2(gameObj, map, bounce = false) {
+    if (gameObj == null || map == null) return;
+
+    let collider = gameObj.getCollisionBox();
+
+    let checkBox = collider.getBoundingBox();
+    let tw = map.tilewidth, th = map.tileheight;
+    let minx = Math.floor(checkBox.left / tw);
+    let miny = Math.floor(checkBox.top / th);
+    let maxx = Math.floor((checkBox.left + checkBox.width) / tw);
+    let maxy = Math.floor((checkBox.top + checkBox.height) / th);
+
+    let checkLayer = ~~(gameObj.zindex / 10);
+
+    // 先撈出有可能發生碰撞的地圖物體，並建立碰撞盒
+    let contactsTile = [];
+    for (let row = miny; row <= maxy; row++) {
+        for (let col = minx; col <= maxx; col++) {
+            let tileType = map.getTileCollisionWithLayer(checkLayer, row, col);
+            // console.log(tileType)
+            if (tileType == 0) continue;
+            // tile center，但為什麼一定要centet，直接標4個點不行嗎
+            let cx = col * tw + tw / 2, cy = row * th + th / 2;
+            let mapObj = new Polygon(new Vector(cx, cy),
+                [{ x: -tw / 2, y: -th / 2 }, { x: tw / 2, y: -th / 2 }, { x: tw / 2, y: th / 2 }, { x: -tw / 2, y: th / 2 }]);
+            // 如果這樣建立，會出問題
+            // let mapObj = new Polygon(new Vector(col * tw, row * th),
+            //     [{ x: 0, y: 0 }, { x: tw, y: 0 }, { x: tw, y: th }, { x: tw, y: 0 }]);
+            contactsTile.push(mapObj);
+        }
+    }
+    let isDeal = false;
+    // 逐一檢查有可能碰撞的tile collisionBox
+    for (let i = 0; i < contactsTile.length; i++) {
+        // 之後應該要把entity collision整合出來
+        const tile = contactsTile[i];
+        let mtv = collider.collideWith(tile);
+        if (mtv.axis) {
+            mtv.overlap *= 1.0001;
+            let v = separate(tile, collider, mtv)
+            gameObj.pos.add(v)
+
+            if (bounce && !isDeal) {
+                mtvBounce(gameObj, mtv)
+                isDeal = true;
+            }
+            // break;
+        }
+    }
+}
+
+function box2box(box1, box2) {
+    if (box1.left + box1.width < box2.left || box2.left + box2.width < box1.left ||
+        box1.top + box1.height < box2.top || box2.top + box2.height < box1.top)
+        return false;
+    return true;
 }

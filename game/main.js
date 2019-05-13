@@ -7,6 +7,7 @@ var ctx_font = "Consolas",
 var world;
 var asset;
 var player;
+var mapp;
 
 var debugMode = false;
 // list:entity name
@@ -34,11 +35,13 @@ function init() {
         render: draw
     }, gameConfig);
 
-    map = new TileMap(world, Tilemap_Data[nowMap]);
-    // map.addToRenderList(entities);
-    world.tileMap = map;
+    mapp = new TileMap2(world, asset.jsons.untitled)
 
-    for (let index = 0; index < 50; index++) {
+    // map = new TileMap(world, Tilemap_Data[nowMap]);
+    // map.addToRenderList(entities);
+    world.tileMap = mapp;
+
+    for (let index = 0; index < 10; index++) {
         let test = {
             hp: 2,
             pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
@@ -66,6 +69,20 @@ function init() {
         // collisionToMap:false,
         animation: player1Animation
     });
+    // player = new Player2({
+    //     name: 'player',
+    //     pos: { x: randomInt(200, 400), y: randomInt(200, 400) },
+    //     vel: { x: 0, y: 0 },
+    //     acc: { x: 0, y: 0 },
+    //     moveSpeed: 200,
+    //     collider: {
+    //         polygon: [{ x: -16, y: 0 }, { x: 16, y: 0 }, { x: 16, y: 24 }, { x: -16, y: 24 }],
+    //         offset: { x: 0, y: 0 }
+    //         // radius: 20
+    //     },
+    //     // collisionToMap:false,
+    //     animation: player3Animation
+    // });
     world.addGameObj(player);
 
     let cameraConfig = {
@@ -81,61 +98,69 @@ function init() {
     }
     world.setCamera(new Camera(cameraConfig));
 
-    // let actionBox1 = {
-    //     name: 'actionBox',
-    //     pos: {
-    //         x: 300,
-    //         y: 300
-    //     },
-    //     collider: {
-    //         x: -20, y: -20,
-    //         w: 40, h: 40
-    //     },
-    //     collisionToMap: false,
-    //     bounceWithMap: false,
-    //     hitActionData: {
-    //         parent: null,
-    //         target: ['player'],
-    //         action: function (ent1, ent2) {
-    //             if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
-    //                 ent2.zindex = 1;
-    //                 ent2.moveSpeed = 200;
-    //             }
-    //         }
-    //     },
-    //     zindex: 9,
-    //     drawBase: true,
-    //     defaultColor: 'rgba(127,255,255,0.5)'
-    // };
-    // let actionBox2 = {
-    //     name: 'actionBox',
-    //     pos: {
-    //         x: 400,
-    //         y: 400
-    //     },
-    //     collider: {
-    //         x: -20, y: -20,
-    //         w: 40, h: 40
-    //     },
-    //     collisionToMap: false,
-    //     bounceWithMap: false,
-    //     hitActionData: {
-    //         parent: null,
-    //         target: ['player'],
-    //         action: function (ent1, ent2) {
-    //             if (rect2rect(ent1.getCollisionBox(), ent2.getCollisionBox())) {
-    //                 ent2.zindex = 10;
-    //                 ent2.moveSpeed = 500;
-    //             }
-    //         }
-    //     },
-    //     zindex: 9,
-    //     drawBase: true,
-    //     defaultColor: 'rgba(127,255,255,0.5)'
-    // };
+    let actionBox1 = {
+        name: 'actionBox',
+        pos: {
+            x: 300,
+            y: 300
+        },
+        collider: {
+            radius: 10
+        },
+        collisionToMap: false,
+        bounceWithMap: false,
+        hitActionData: {
+            parent: null,
+            target: ['player'],
+            action: function (ent1, ent2) {
+                let collider1 = ent1.getCollisionBox();
+                let collider2 = ent2.getCollisionBox();
+                // debugger
+                if (!box2box(collider1.getBoundingBox(), collider2.getBoundingBox())) return;
+                let mtv = collider1.collideWith(collider2);
+                if (mtv.axis) {
+                    ent2.zindex = 1;
+                    ent2.moveSpeed = 200;
+                }
+            }
+        },
+        zindex: 9,
+        drawBase: true,
+        defaultColor: 'rgba(127,255,255,0.5)'
+    };
+    let actionBox2 = {
+        name: 'actionBox',
+        pos: {
+            x: 400,
+            y: 400
+        },
+        collider: {
+            radius: 10
+        },
+        collisionToMap: false,
+        bounceWithMap: false,
+        hitActionData: {
+            parent: null,
+            target: ['player'],
+            action: function (ent1, ent2) {
+                let collider1 = ent1.getCollisionBox();
+                let collider2 = ent2.getCollisionBox();
+                // debugger
+                if (!box2box(collider1.getBoundingBox(), collider2.getBoundingBox())) return;
+                let mtv = collider1.collideWith(collider2);
+                if (mtv.axis) {
+                    ent2.zindex = 10;
+                    ent2.moveSpeed = 500;
+                }
+            }
+        },
+        zindex: 9,
+        drawBase: true,
+        defaultColor: 'rgba(127,255,255,0.5)'
+    };
 
-    // world.addGameObj(new Entity(actionBox1));
-    // world.addGameObj(new Entity(actionBox2));
+    world.addGameObj(new Entity(actionBox1));
+    world.addGameObj(new Entity(actionBox2));
 
     main();
 }
@@ -279,8 +304,9 @@ function showDebugInfo(ctx) {
     }
 
     // 地圖碰撞盒
-    let tw = map.tileWidth;
-    let th = map.tileHeight;
+    let map = world.tileMap;
+    let tw = map.tilewidth;
+    let th = map.tileheight;
 
     let start = {
         x: Math.max(0, Math.floor(camera.pos.x / tw)),
@@ -294,7 +320,7 @@ function showDebugInfo(ctx) {
         for (let col = start.x; col < end.x; col++) {
             let x = (col * tw);
             let y = (row * th);
-            let tile = map.getCollisionTile(row, col);
+            let tile = map.getTileCollisionWithLayer(1, row, col);
             if (tile == 0) continue;
             ctx.fillStyle = "rgba(255,255,127,0.3)";
             ctx.fillRect(x, y, tw, th);

@@ -61,7 +61,7 @@ class Entity {
             this.createShape(this.colliderRef);
         }
 
-        this.zindex = GetValue(config, 'zindex', 10);
+        this.zindex = GetValue(config, 'zindex', 15);
 
         this.aniData = GetValue(config, 'animation', null);
         if (this.aniData != null) {
@@ -76,7 +76,7 @@ class Entity {
             let image = asset.imgs[ani.imgName];
             this.sheet = new SpriteSheet(image, ani.frameWidth, ani.frameHeight);
             this.animation = new Animation(this.sheet, ani.speed, ani.action['default'], ani.repeat);
-            this.renderBox = new Box(0, 0, this.renderWidth, this.renderHeight);
+            this.renderBox = new BoundingBox(0, 0, this.renderWidth, this.renderHeight);
         }
 
         this.drawBase = GetValue(config, 'drawBase', false);
@@ -107,7 +107,7 @@ class Entity {
 
         let tileMap = this.world.tileMap;
         if (this.collisionToMap && this.colliderRef != null && tileMap != null) {
-            boxCollisionResponseToMap(this, tileMap, this.bounceToMap);
+            boxCollisionResponseToMap2(this, tileMap, this.bounceToMap);
         }
 
         if (this.animation) {
@@ -125,22 +125,12 @@ class Entity {
     draw(ctx, interp) {
         // 莫名耗效能，目前觀察是tile其實沒必要這樣檢查，浪費效能，30x40個tile都new Box()會讓GC負荷太重
         // 讓tile繼承entity，讓他根據camera.pos.x / tile.width之類的方法，檢查有沒有碰到來塞選繪製
+        // if(this.name == 'actionBox')debugger
         if (this.world.camera) {
             if (!this.checkInView(world.camera)) return
-            // let camera = this.world.camera;
-            // if (this.name == 'tile') {
-            //     // 目前這樣比較不會吃效能(GC)，所以tile不需要renderBox判斷是否在顯示範圍，直接判斷即可
-            //     // 而checkInView可能從camera改放在entity中比較好，根據不同物件處理不同的可視判斷
-            //     let tw = this.world.tileMap.tileWidth;
-            //     let th = this.world.tileMap.tileHeight;
-            //     if (this.pos.x + tw < camera.pos.x || this.pos.x - tw > camera.pos.x + camera.width ||
-            //         this.pos.y + th < camera.pos.y || this.pos.y - th > camera.pos.y + camera.height) {
-            //         return;
-            //     }
-            // } else if (!this.checkInView(world.camera)) return
         }
         ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
+        ctx.translate(Math.floor(this.pos.x), Math.floor(this.pos.y));
         ctx.rotate(this.rotate * Math.PI / 180);
         ctx.scale(this.scaleX, this.scaleY);
 
@@ -148,10 +138,10 @@ class Entity {
             this.animation.draw(ctx, -this.renderWidth / 2, -this.renderHeight / 2, this.renderWidth, this.renderHeight);
         } else if (this.drawBase) {
             ctx.fillStyle = this.defaultColor;
-            // debugger
-            if (this.colliderRef) {
-                let c = this.colliderRef;
-                ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+            if (this.collider) {
+                ctx.translate(-this.pos.x, -this.pos.y);
+                this.collider.fill(ctx)
+                ctx.translate(this.pos.x, this.pos.y);
             } else {
                 ctx.fillRect(-this.defaultSize / 2, -this.defaultSize / 2, this.defaultSize, this.defaultSize);
             }
@@ -161,30 +151,27 @@ class Entity {
 
     getCollisionBox() {
         // 更新碰撞盒位置
-        // if (!this.colliderRef) return null;
-        // let collider = this.colliderRef.clone();
-        // collider.pos.add(this.pos);
-        this.collider.pos.x = this.pos.x;
-        this.collider.pos.y = this.pos.y;
-        this.collider.pos.x += this.colliderOffset.x
-        this.collider.pos.y += this.colliderOffset.y
+        this.collider.pos.x = this.pos.x + this.colliderOffset.x;
+        this.collider.pos.y = this.pos.y + this.colliderOffset.y;
         return this.collider;
     }
     getRenderBox() {
         if (this.animation) {
-            return new Box(this.pos.x - this.renderWidth / 2, this.pos.y - this.renderHeight / 2, this.renderWidth, this.renderHeight);
+            this.renderBox.left = this.pos.x;
+            this.renderBox.top = this.pos.y;
+            return this.renderBox;
         }
         if (this.colliderRef) {
-            return this.getCollisionBox();
+            return this.collider.getBoundingBox();
         }
-        return new Box(this.pos.x - this.defaultSize / 2, this.pos.y - this.defaultSize / 2, this.defaultSize, this.defaultSize);
+        return new BoundingBox(this.pos.x - this.defaultSize / 2, this.pos.y - this.defaultSize / 2, this.defaultSize, this.defaultSize);
     }
 
     checkInView(camera) {
-        let box1 = camera.getCollisionBox();
+        let box1 = camera.getBoundingBox();
         let box2 = this.getRenderBox();
 
-        return rect2rect(box1, box2);
+        return box2box(box1, box2);
     }
 }
 

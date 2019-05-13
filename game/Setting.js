@@ -18,6 +18,7 @@ var assetSource = {
         'robin': 'asset/img/robin.png',
         'swoosh': 'asset/img/swoosh.png',
         'tileset': 'asset/img/tileset.png',
+        'player3': 'asset/img/adventurer-v1.5-Sheet-new.png'
         // 'imgtest1':'http://127.0.0.1:8080/'
         // 'ttt':'https://i.imgur.com/Ih4eMyv.gif',
         // 'ttt2':'https://i.imgur.com/ssZ6BcJ.gif'
@@ -26,7 +27,10 @@ var assetSource = {
 
     },
     jsons: {
-        // 'testJSON': 'asset/data/testJSON.json'
+        'testJSON': 'asset/data/testJSON.json',
+        'untitled': 'asset/data/test2/untitled.json',
+        'tileset': 'asset/data/test2/tileset.json',
+        'tilecolor': 'asset/data/test2/tilecolor.json'
     }
 };
 
@@ -50,6 +54,21 @@ var player1Animation = {
         'stand-left': '24',
         'stand-right': '17',
         'default': '3'
+    }
+};
+var player3Animation = {
+    frameWidth: 350 / 7,
+    frameHeight: 592 / 16,
+    renderScale: 2,
+    imgName: 'player3',
+    speed: 10,
+    action: {
+        'idle1': '0-3',
+        'walk': '8-13',
+        'atk1': '42-46',
+        'atk2': '47-52',
+        'atk3': '53-58',
+        'default': '0'
     }
 };
 var robinAnimation = {
