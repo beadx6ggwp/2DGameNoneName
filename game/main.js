@@ -35,7 +35,7 @@ function init() {
         render: draw
     }, gameConfig);
 
-    mapp = new TileMap2(world, asset.jsons.untitled)
+    mapp = new TileMap2(world, asset.jsons.map_2)
 
     // map = new TileMap(world, Tilemap_Data[nowMap]);
     // map.addToRenderList(entities);
@@ -101,11 +101,11 @@ function init() {
     let actionBox1 = {
         name: 'actionBox',
         pos: {
-            x: 300,
-            y: 300
+            x: 560,
+            y: 150
         },
         collider: {
-            radius: 10
+            radius: 25
         },
         collisionToMap: false,
         bounceWithMap: false,
@@ -119,23 +119,23 @@ function init() {
                 if (!box2box(collider1.getBoundingBox(), collider2.getBoundingBox())) return;
                 let mtv = collider1.collideWith(collider2);
                 if (mtv.axis) {
-                    ent2.zindex = 1;
-                    ent2.moveSpeed = 200;
+                    ent2.zindex = 35;
+                    // ent2.moveSpeed = 200;
                 }
             }
         },
-        zindex: 9,
+        zindex: 50,
         drawBase: true,
         defaultColor: 'rgba(127,255,255,0.5)'
     };
     let actionBox2 = {
         name: 'actionBox',
         pos: {
-            x: 400,
-            y: 400
+            x: 560,
+            y: 250
         },
         collider: {
-            radius: 10
+            radius: 25
         },
         collisionToMap: false,
         bounceWithMap: false,
@@ -149,12 +149,12 @@ function init() {
                 if (!box2box(collider1.getBoundingBox(), collider2.getBoundingBox())) return;
                 let mtv = collider1.collideWith(collider2);
                 if (mtv.axis) {
-                    ent2.zindex = 10;
-                    ent2.moveSpeed = 500;
+                    ent2.zindex = 15;
+                    // ent2.moveSpeed = 500;
                 }
             }
         },
-        zindex: 9,
+        zindex: 50,
         drawBase: true,
         defaultColor: 'rgba(127,255,255,0.5)'
     };
@@ -316,14 +316,15 @@ function showDebugInfo(ctx) {
         x: Math.min(Math.floor((camera.pos.x + camera.width) / tw + 1), map.cols),
         y: Math.min(Math.floor((camera.pos.y + camera.height) / th + 1), map.rows)
     }
+    let currentLayer = ~~(player.zindex / 10);
     for (let row = start.y; row < end.y; row++) {
         for (let col = start.x; col < end.x; col++) {
             let x = (col * tw);
             let y = (row * th);
-            let tile = map.getTileCollisionWithLayer(1, row, col);
+            let tile = map.getTileCollisionWithLayer(currentLayer, row, col);
             if (tile == 0) continue;
 
-            let tileIndex = map.getTileWithLayer(1, row, col);
+            let tileIndex = map.getTileWithLayer(currentLayer, row, col);
             if (tileIndex > 0 && tileIndex != undefined) {
                 let nowSet = -1;
                 for (let i = 0; i < map.firstgidList.length; i++) {
@@ -333,7 +334,7 @@ function showDebugInfo(ctx) {
                 // debugger
                 let tiles = map.tilesets[nowSet].tiles;
                 if (tiles && tiles[imgIndex]) {
-                    let coll = tiles[imgIndex].collisions;
+                    let coll = tiles[imgIndex].collisions || [];
                     // debugger
                     for (const obj of coll) {
                         let cx = col * tw, cy = row * th;

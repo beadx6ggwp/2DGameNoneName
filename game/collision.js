@@ -158,7 +158,8 @@ function boxCollisionResponseToMap2(gameObj, map, bounce = false) {
                 let tiles = map.tilesets[nowSet].tiles;
                 if (tiles && tiles[imgIndex]) {
                     // debugger
-                    let coll = tiles[imgIndex].collisions;
+                    let coll = tiles[imgIndex].collisions || [];
+                    if(coll == undefined)debugger
                     for (const obj of coll) {
                         let cx = col * tw, cy = row * th;
                         obj.pos.x = cx; obj.pos.y = cy
@@ -166,6 +167,7 @@ function boxCollisionResponseToMap2(gameObj, map, bounce = false) {
                         contactsTile.push(obj.getCollisionBox());
                     }
                     continue;
+
                 }
             }
             // tile center，但為什麼一定要centet，直接標4個點不行嗎

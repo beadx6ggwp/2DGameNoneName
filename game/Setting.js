@@ -18,7 +18,8 @@ var assetSource = {
         'robin': 'asset/img/robin.png',
         'swoosh': 'asset/img/swoosh.png',
         'tileset': 'asset/img/tileset.png',
-        'player3': 'asset/img/adventurer-v1.5-Sheet-new.png'
+        'player3': 'asset/img/adventurer-v1.5-Sheet-new.png',
+        'Overworld': 'asset/tile/Overworld.png'
         // 'imgtest1':'http://127.0.0.1:8080/'
         // 'ttt':'https://i.imgur.com/Ih4eMyv.gif',
         // 'ttt2':'https://i.imgur.com/ssZ6BcJ.gif'
@@ -30,7 +31,9 @@ var assetSource = {
         'testJSON': 'asset/data/testJSON.json',
         'untitled': 'asset/data/test2/untitled.json',
         'tileset': 'asset/data/test2/tileset.json',
-        'tilecolor': 'asset/data/test2/tilecolor.json'
+        'tilecolor': 'asset/data/test2/tilecolor.json',
+        'map_2': 'asset/tile/map_2.json',
+        'Overworld': 'asset/tile/Overworld.json'
     }
 };
 
