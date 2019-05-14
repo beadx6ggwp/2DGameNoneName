@@ -44,7 +44,7 @@ function init() {
     for (let index = 0; index < 10; index++) {
         let test = {
             hp: 2,
-            pos: { x: randomInt(32, 1000), y: randomInt(32, 1000) },
+            pos: { x: randomInt(32, 500), y: randomInt(32, 500) },
             vel: { x: randomInt(-100, 100), y: randomInt(-100, 100) },
             collider: {
                 polygon: [{ x: -11, y: -10 }, { x: 11, y: -10 }, { x: 11, y: 10 }, { x: -11, y: 10 }]
@@ -322,6 +322,28 @@ function showDebugInfo(ctx) {
             let y = (row * th);
             let tile = map.getTileCollisionWithLayer(1, row, col);
             if (tile == 0) continue;
+
+            let tileIndex = map.getTileWithLayer(1, row, col);
+            if (tileIndex > 0 && tileIndex != undefined) {
+                let nowSet = -1;
+                for (let i = 0; i < map.firstgidList.length; i++) {
+                    if (tileIndex >= map.firstgidList[i]) nowSet = map.firstgidList[i];
+                }
+                let imgIndex = tileIndex - nowSet;// -1
+                // debugger
+                let tiles = map.tilesets[nowSet].tiles;
+                if (tiles && tiles[imgIndex]) {
+                    let coll = tiles[imgIndex].collisions;
+                    // debugger
+                    for (const obj of coll) {
+                        let cx = col * tw, cy = row * th;
+                        obj.pos.x = cx; obj.pos.y = cy
+                        obj.getCollisionBox().fill(ctx);
+                    }
+                    continue
+                }
+            }
+            // debugger
             ctx.fillStyle = "rgba(255,255,127,0.3)";
             ctx.fillRect(x, y, tw, th);
             ctx.strokeStyle = "#000";

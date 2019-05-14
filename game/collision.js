@@ -144,9 +144,30 @@ function boxCollisionResponseToMap2(gameObj, map, bounce = false) {
     let contactsTile = [];
     for (let row = miny; row <= maxy; row++) {
         for (let col = minx; col <= maxx; col++) {
-            let tileType = map.getTileCollisionWithLayer(checkLayer, row, col);
-            // console.log(tileType)
-            if (tileType == 0) continue;
+            let collisionIndex = map.getTileCollisionWithLayer(checkLayer, row, col);
+            if (collisionIndex <= 0 || collisionIndex == undefined) continue;
+
+            let tileIndex = map.getTileWithLayer(checkLayer, row, col);
+            if (tileIndex > 0 && tileIndex != undefined) {
+                let nowSet = -1;
+                for (let i = 0; i < map.firstgidList.length; i++) {
+                    if (tileIndex >= map.firstgidList[i]) nowSet = map.firstgidList[i];
+                }
+                let imgIndex = tileIndex - nowSet;// -1
+                // debugger
+                let tiles = map.tilesets[nowSet].tiles;
+                if (tiles && tiles[imgIndex]) {
+                    // debugger
+                    let coll = tiles[imgIndex].collisions;
+                    for (const obj of coll) {
+                        let cx = col * tw, cy = row * th;
+                        obj.pos.x = cx; obj.pos.y = cy
+                        // debugger
+                        contactsTile.push(obj.getCollisionBox());
+                    }
+                    continue;
+                }
+            }
             // tile center，但為什麼一定要centet，直接標4個點不行嗎
             let cx = col * tw + tw / 2, cy = row * th + th / 2;
             let mapObj = new Polygon(new Vector(cx, cy),

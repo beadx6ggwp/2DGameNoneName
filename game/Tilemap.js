@@ -177,10 +177,12 @@ class TileMap2 {
 
         let cols = this.cols, rows = this.rows;
         let tw = this.tilewidth, th = this.tileheight;
-        for (const layer of this.layers) {
+        for (let i = 0; i < this.layers.length; i++) {
+            const layer = this.layers[i];
             if (layer['objectlayer']) {
                 for (const obj of layer['objectlayer']) {
-                    world.addGameObj(createMapObject(obj))
+                    let objConf = createMapObjectConfig(obj);
+                    world.addGameObj(new Entity(objConf))
                 }
             }
             if (layer['tilelayer']) {
@@ -198,6 +200,17 @@ class TileMap2 {
                         }
                         // 歸位新圖片的取得索引
                         let imgIndex = tileIndex - nowSet;// -1
+
+                        let tiles = this.tilesets[nowSet].tiles;
+                        let aniseq = `${imgIndex}-${imgIndex}`;
+                        let speed = 0;
+                        if (tiles && tiles[imgIndex]) {
+                            let ani = tiles[imgIndex].animation;
+                            if (ani) {
+                                aniseq = ani.sequence.join(',');
+                                speed = ani.speed;
+                            }
+                        }
                         let tileConfig = {
                             name: 'tile',
                             pos: { x: x, y: y },
@@ -210,9 +223,9 @@ class TileMap2 {
                                 frameHeight: th,
                                 renderScale: 1,
                                 imgName: this.tilesets[nowSet].imgName,
-                                speed: 0,
+                                speed: speed,
                                 action: {
-                                    'default': `${imgIndex}-${imgIndex}`
+                                    'default': aniseq
                                 },
                             }
                         }
@@ -228,6 +241,8 @@ class TileMap2 {
         }
     }
     getTileWithLayer(layer, row, col) {
+        if (!this.layers[layer]['tilelayer']) return 0
+
         let index = row * this.cols + col;
         return this.layers[layer]['tilelayer'][index];
     }
@@ -259,7 +274,10 @@ class Tileset {
                 if (tile['objectgroup']) {
                     objs.collisions = [];
                     for (const obj of tile['objectgroup']['objects']) {
-                        objs.collisions.push(createMapObject(obj))
+                        let objConf = createMapObjectConfig(obj);
+                        // objConf.collider.offset = { x: obj.x, y: obj.y };
+                        // debugger
+                        objs.collisions.push(new Entity(objConf))
                     }
                 }
                 if (tile['animation']) {
@@ -267,7 +285,7 @@ class Tileset {
                     for (const obj of tile.animation) {
                         objs.animation.sequence.push(obj['tileid'])
                     }
-                    objs.animation.speed = tile['animation'][0]['duration']
+                    objs.animation.speed = 1000 / tile['animation'][0]['duration']
                 }
                 this.tiles[tile.id.toString()] = objs;
             }
@@ -291,10 +309,10 @@ class Layer {
     }
 }
 
-function createMapObject(object) {
+function createMapObjectConfig(object) {
     let objConfig = {
         name: 'layerObj',
-        pos: { x: object.x, y: object.y },
+        pos: { x: 0, y: 0 },
         collisionToMap: false,
         hitActionData: {
             parent: this,
@@ -316,35 +334,34 @@ function createMapObject(object) {
         drawBase: true
     }
     if (object.ellipse) {
+        // debugger
         let r = object.width / 2;
         // center
-        objConfig.pos.x += r;
-        objConfig.pos.y += r;
         objConfig.collider = {
-            radius: r
+            radius: r,
+            offset: { x: object.x + r, y: object.y + r }
         }
 
-        return new Entity(objConfig);
+        return objConfig;
     }
 
     if (object.polygon) {
         objConfig.collider = {
-            polygon: object.polygon
+            polygon: object.polygon,
+            offset: { x: object.x, y: object.y }
         }
-        return new Entity(objConfig);
+        return objConfig;
     }
 
 
     let w = object.width;
     let h = object.height;
 
-    objConfig.pos.x += w / 2;
-    objConfig.pos.y += h / 2;
     objConfig.collider = {
-        polygon: [{ x: -w / 2, y: -h / 2 }, { x: w / 2, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }]
+        polygon: [{ x: -w / 2, y: -h / 2 }, { x: w / 2, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }],
+        offset: { x: object.x + w / 2, y: object.y + h / 2 }
     }
-
-    return new Entity(objConfig);
+    return objConfig;
 }
 
 class Tile2 extends Entity {
