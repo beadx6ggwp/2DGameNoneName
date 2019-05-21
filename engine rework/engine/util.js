@@ -90,23 +90,45 @@ function createElementFromHTML(htmlString) {
     return div.firstChild;
 }
 
-function Arrayinsert(arr, pos, ele) {
-    if ((arr.length === 0 && pos === 0) || (pos === arr.length)) {
-        this.push(ele);
-    }
-    else if (pos < 0 || pos > arr.length) {
+function Arrayinsert(arr, pos, items) {
+    if (pos < 0 || pos > arr.length) {
         return;
     }
     else {
+        // array.splice(start[, deleteCount[, item1[, item2[, ...]]]])
+        arr.splice.apply(arr, [pos, 0].concat(items));
+        // arr.splice(pos, 0, items);
         // 第一種
-        var len = arr.length - pos;
-        var a2 = arr.slice(pos);
-        arr.splice(pos, len, ele, ...a2);
+        // var len = arr.length - pos;
+        // var a2 = arr.slice(pos);
+        // arr.splice(pos, len, items, ...a2);
 
         // 第二種
         // var len = arr.length - pos;
         // var a2 = arr.slice(pos);
-        // a2.unshift(pos, len, ele);
+        // a2.unshift(pos, len, items);
         // arr.splice.apply(arr, a2);
     }
+}
+
+
+//----tool-------
+function toRadio(angle) {
+    return angle * Math.PI / 180;
+}
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    while (1)
+        if ((new Date().getTime() - start) > milliseconds)
+            break;
+}
+function minsecms() {
+    var d = new Date();
+    return `${d.getMinutes()}:${d.getSeconds()}.${d.getMilliseconds()}`;
 }

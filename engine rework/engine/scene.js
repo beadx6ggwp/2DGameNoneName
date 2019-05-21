@@ -1,18 +1,32 @@
+/*
+sc.addListener(new SceneEventListener({
+        beforeRender: function () {},
+        afterRender: function () {}
+    }))
+*/
+
+class SceneEventListener extends EventListener {
+    constructor(config) {
+        super(config);
+
+        this.enabled = true;
+        config = config || {};
+        this.onBeforeRender = GetValue(config, 'beforeRender', () => true);
+        this.onAfterRender = GetValue(config, 'afterRender', () => true);
+    }
+}
+
 class Scene {
     constructor(config) {
         config = config || {};
-        this.name = GetValue(config, 'name', `Unnamed_${Scene.SID++}`);
+        this.name = GetValue(config, 'name', `Scene_${Scene.SID++}`);
 
-        // this.width = GetValue(config, 'width', 800);
-        // this.height = GetValue(config, 'height', 600);
-        // this.canvasOnCenter = GetValue(config, 'canvasOnCenter', 1);
-        // this.canvas = CreateCanvas(`${this.name}`, this.width, this.height, this.canvasOnCenter);
-
+        // --------display setting-------------
         this.x = GetValue(config, 'x', 0) | 0;
         this.y = GetValue(config, 'y', 0) | 0;
         this.w = GetValue(config, 'w', 800) | 0;
         this.h = GetValue(config, 'h', 600) | 0;
-        // 如果希望有UI場景，可試著用null處理
+        // 如果希望有UI場景，可用null處理
         this.color = GetValue(config, 'color', '#000');// null透明
 
         // 需要注意canvas zindex是否會被div蓋住
@@ -26,23 +40,92 @@ class Scene {
         this.canvas = _canvas
         this.setPos();
         this.setSize();
-        this.setColor(this.color);
+        this.setColor();
 
         this.ctx = _canvas.getContext('2d');
+        // 不使用雙線性穿插
+        this.ctx.imageSmoothingEnabled = false;
 
         this.holder.appendChild(_canvas);
         document.body.appendChild(_holder);
 
+        //----------game-------------------
+        this.listeners = [];
+        this.robjs = [];
+        this.namedRObjs = {};
     }
 
-    update() {
+    // render object operate
+    createRObj(className, initArgs) {
+        var obj = ClassFactory.newInstance(className || 'RenderObj', initArgs);
+        this.addRObj(obj);
+        return obj;
+    }
+    addRObj(renderObj) {
+        renderObj.scene = this;
+        this.robjs.push(renderObj);
+        this.namedRObjs[renderObj.name] = renderObj;
+    }
+    removeRObjByName(name) {
+        this.namedRObjs[name] && (this.namedRObjs[name].canRemove = true);
+    }
+    removeAllcanRemove() {
+        for (let i = this.robjs.length - 1; i >= 0; i--) {
+            const robj = this.robjs[i];
+            if (robj.canRemove) {
+                delete this.robjs[i];
+                this.robjs.splice(i, 1);
+            }
+        }
+    }
+    getRObjByName(name) {
+        return this.namedRObjs[name];
+    }
+    clearRObj() {
+        this.robjs = [];
+        this.namedRObjs = {};
+    }
 
+    // Event
+    addListener(ln) {
+        this.listeners.push(ln);
+    }
+    clearListener() {
+        this.listeners.length = 0;
+    }
+    update(dt, tick) {
+        for (const robj of this.robjs) {
+            robj.update(dt, tick);
+        }
+        this.removeAllcanRemove();
     }
 
     render() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
 
+        this.beforeRender();
+
+        for (const robj of this.robjs) {
+            this.ctx.save();
+            robj.render(this.ctx);
+            this.ctx.restore();
+        }
+
+        this.afterRender();
     }
 
+    beforeRender() {
+        for (const ln of this.listeners) {
+            ln.enabled && ln.onBeforeRender();
+        }
+    }
+    afterRender() {
+        for (const ln of this.listeners) {
+            ln.enabled && ln.onAfterRender();
+        }
+    }
+
+    // display operate
     setPos(x, y) {
         this.x = x || this.x;
         this.y = y || this.y;
@@ -58,7 +141,7 @@ class Scene {
         this.canvas['height'] = `${this.h}`;
     }
     setColor(color) {
-        this.color = color;
+        this.color = color || this.color;
         this.holder.style['background-color'] = this.color;
     }
     setBGImg(imgURL, pattern) {
@@ -91,4 +174,5 @@ class Scene {
     }
 }
 Scene.SID = 0;
-ClassFactory.regClass('Scene', Scene);
+Scene.ClassName = 'Scene';
+ClassFactory.regClass(Scene.ClassName, Scene);

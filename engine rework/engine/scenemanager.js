@@ -6,14 +6,14 @@ class SceneManager {
         this.scenes = [];
     }
 
-    createScene(sceneClass, initArgs) {
+    createScene(className, initArgs) {
         let sc;
         if (arguments.length == 1) {
             // [{ name: 'sc3', x: 100, y: 100, color: '#FF7' }]
             sc = ClassFactory.newInstance('Scene', arguments[0]);
         } else {
             // 處理繼承場景的建立
-            sc = ClassFactory.newInstance(sceneClass || 'Scene', initArgs);
+            sc = ClassFactory.newInstance(className || 'Scene', initArgs);
         }
         this.push(sc);
         return sc;
