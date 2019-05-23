@@ -53,3 +53,87 @@ var FrameState = {
 var FPStats = new Stats();
 document.body.appendChild(FPStats.dom);
 FPStats.showPanel(0);
+
+
+
+var Key = {
+    states: new Array(255),
+    clearKeyStates: function () {
+        for (var i = 0; i < 255; i++) {
+            this.states[i] = 0;
+        }
+    },
+    setEnabled: function (flag) {
+        let self = this;
+        if (flag) {
+            document.addEventListener('keydown', keyDown, false);
+            document.addEventListener('keyup', keyUp, false);
+        } else {
+            document.removeEventListener('keydown', keyDown, false);
+            document.removeEventListener('keyup', keyUp, false);
+        }
+    },
+    pressed: function (keyChar) {
+        if (typeof keyChar == 'string') return this.states[KeyValue[keyChar]];
+        return this.states[keyChar];
+    }
+}
+Key.setEnabled(true);
+
+function keyDown(e) {
+    Key.states[e.keyCode] = 1;
+};
+
+function keyUp(e) {
+    Key.states[e.keyCode] = 0;
+};
+
+
+var KeyValue = {
+    A: 65,
+    B: 66,
+    C: 67,
+    D: 68,
+    E: 69,
+    F: 70,
+    G: 71,
+    H: 72,
+    I: 73,
+    J: 74,
+    K: 75,
+    L: 76,
+    M: 77,
+    N: 78,
+    O: 79,
+    P: 80,
+    Q: 81,
+    R: 82,
+    S: 83,
+    T: 84,
+    U: 85,
+    V: 86,
+    W: 87,
+    X: 88,
+    Y: 89,
+    Z: 90,
+    N0: 48,
+    N1: 49,
+    N2: 50,
+    N3: 51,
+    N4: 52,
+    N5: 53,
+    N6: 54,
+    N7: 55,
+    N8: 56,
+    N9: 57,
+    LEFT: 37,
+    RIGHT: 39,
+    UP: 38,
+    DOWN: 40,
+    ENTER: 13,
+    SPACE: 32,
+    TAB: 9,
+    SHIFT: 16,
+    ALT: 18,
+    CTRL: 17
+}

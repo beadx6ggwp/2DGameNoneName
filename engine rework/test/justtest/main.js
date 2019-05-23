@@ -7,14 +7,6 @@ var w = 800, h = 600;
 
 window.onload = function () {
     game = new Game();
-
-    game.sceneManager.createScene([{ name: 'sc3', x: 200, y: 200, color: '#FF7' }]);
-    game.sceneManager.createScene([{ name: 'sc2', x: 150, y: 150, color: '#F77' }]);
-    sc = game.sceneManager.createScene([{ name: 'sc1', x: 100, y: 100 }]);
-
-    sc.setBGImg('https://i.imgur.com/2ucWbfe.jpg', 0);
-    initRenderObj(sc);
-
     game.addListener(new AppEventListener({
         afterRender: function () {
             var debugInfo = [
@@ -24,6 +16,23 @@ window.onload = function () {
             document.getElementById('p1').innerHTML = debugInfo.join('<br>');
         }
     }))
+
+    game.sceneManager.createScene([{ name: 'sc3', x: 200, y: 200, color: '#FF7' }]);
+    game.sceneManager.createScene([{ name: 'sc2', x: 150, y: 150, color: '#F77' }]);
+    sc = game.sceneManager.createScene([{ name: 'sc1', x: 100, y: 100 }]);
+
+    sc.setBGImg('https://i.imgur.com/2ucWbfe.jpg', 0);
+    initRenderObj(sc);
+
+    ResManager.loadResConfig('res/json/res.json',
+        (loadedCount, totalCount, currLoadObj) => {
+            console.log(`${loadedCount}/${totalCount}`, currLoadObj)
+        },
+        (m) => {
+            console.log('OK');
+        }
+    );
+
 
     game.run();
 }

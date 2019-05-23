@@ -17,7 +17,7 @@ class Frames {
         this.img = img;
 
         // 每幀預設持續時間(ms)
-        this.duration = duration || 50;
+        this.duration = (duration == undefined ? 50 : duration);
 
         // 每幀的資料
         this.frames = [];
@@ -109,10 +109,12 @@ class Animation {
         this.updateFrame = GetValue(config, 'update', this.defUpdate);
     }
     defUpdate() {
+        let nextDuration = this.getCurrFrames().duration;
+        // if (nextDuration == 0) return;
+
         this.accumulator += FrameState.deltaTime * this.speed;
 
         // 是否該用while()來處理accumulator超量?
-        let nextDuration = this.getCurrFrames().duration;
         if (this.accumulator > nextDuration) {
             // debugger
             this.accumulator -= nextDuration;
@@ -152,7 +154,7 @@ class Animation {
     }
 
     getCurrFrames() {
-        if(!this.currFrames) return null;
+        if (!this.currFrames) return null;
         return this.currFrames.get(this.currFidx);
     }
     getNextFrames() {
