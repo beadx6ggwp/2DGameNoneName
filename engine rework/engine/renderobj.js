@@ -23,22 +23,25 @@ class RenderObj {
         this.visible = true;
         this.canRemove = false;
 
+        // ActionEvents
+        this.actions = [];
+
         this.drawBase = GetValue(config, 'drawBase', false);
         this.defaultSize = GetValue(config, 'defaultSize', 30);
         this.defaultColor = GetValue(config, 'defaultColor', 'rgba(255,127,127,0.5)');
     }
 
     setPos(x, y) {
-        this.pos.x = x || this.pos.x;
-        this.pos.y = y || this.pos.y;
+        this.pos.x = x;
+        this.pos.y = y;
     }
     setVel(x, y) {
-        this.vel.x = x || this.vel.x;
-        this.vel.y = y || this.vel.y;
+        this.vel.x = x;
+        this.vel.y = y;
     }
     setAcc(x, y) {
-        this.acc.x = x || this.acc.x;
-        this.acc.y = y || this.acc.y;
+        this.acc.x = x;
+        this.acc.y = y;
     }
     setRotation(rad) {
         this.rotation = rad || this.rotation;
@@ -66,7 +69,9 @@ class RenderObj {
 
     drawDefault(ctx) {
         ctx.fillStyle = this.defaultColor;
-        ctx.fillRect(-this.defaultSize / 2, -this.defaultSize / 2, this.defaultSize, this.defaultSize);
+        var defW = this.rw || this.defaultSize;
+        var defH = this.rh || this.defaultSize;
+        ctx.fillRect(-defW / 2, -defH / 2, defW, defH);
     }
 }
 RenderObj.SID = 0;

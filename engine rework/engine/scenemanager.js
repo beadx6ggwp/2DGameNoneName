@@ -52,7 +52,7 @@ class SceneManager {
     bringToTop(scene) {
         let zindex = this.getSceneZindex(scene);
         // 已經是最上面
-        if (zindex == this.scene.length - 1) return;
+        if (zindex == this.scenes.length - 1) return;
 
         this.scenes.splice(zindex, 1);
         this.scenes.push(scene);

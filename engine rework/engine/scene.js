@@ -50,6 +50,7 @@ class Scene {
         document.body.appendChild(_holder);
 
         //----------game-------------------
+        this.actionManager = new ActionEventManager(this);
         this.listeners = [];
         this.robjs = [];
         this.namedRObjs = {};
@@ -63,6 +64,7 @@ class Scene {
     }
     addRObj(renderObj) {
         renderObj.scene = this;
+        this.actionManager.acitons.push(...renderObj.actions);
         this.robjs.push(renderObj);
         this.namedRObjs[renderObj.name] = renderObj;
     }
@@ -97,6 +99,9 @@ class Scene {
         for (const robj of this.robjs) {
             robj.update(dt, tick);
         }
+
+        this.actionManager.update(dt);
+
         this.removeAllcanRemove();
     }
 
