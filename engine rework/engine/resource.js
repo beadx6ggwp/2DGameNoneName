@@ -101,19 +101,19 @@ var FrameRes = {
             }
 
             loadedFN && loadedFN(e, resObj.data);
-        });
+        }, (e, xobj) => console.log('load error', e, xobj));
 
         return resObj;
     },
     parseToAnimation(data) {
         let type = data['type'];
         let img = ResManager.getResByName(ImageRes.TypeName, data['imgName']).data;
-        let animGroup = new AnimationGroup();
+        let anims = new Animations();
         if (type == 0) {
             let frames = new Frames('def', img, 0);
             frames.add(0, 0, img.width, img.height);
-            animGroup.add('def', frames);
-            return animGroup;
+            anims.add('def', frames);
+            return anims;
         }
 
         let animations = data['animations'];
@@ -145,10 +145,10 @@ var FrameRes = {
                             frames.add(x * fw, y * fh, fw, fh);
                         }
                     }
-                    animGroup.add(animName, frames);
+                    anims.add(animName, frames);
                 }
             }
-            return animGroup;
+            return anims;
         }
     }
 }
@@ -174,15 +174,21 @@ function getJSON(src) {
         console.log(JSON.parse(xobj));
     });
 }
-function loadJSON(src, callback) {
+function loadJSON(src, successFN, errorFN) {
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
     xobj.open('GET', src, true);
-    xobj.onreadystatechange = function (e) {
-        if (xobj.readyState == 4 && xobj.status == "200") {
-            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-            callback(e, xobj);
-        }
-    };
+    // xobj.onreadystatechange = function (e) {
+    //     if (xobj.readyState == 4 && xobj.status == "200") {
+    //         // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+    //         successFN(e, xobj);
+    //     }
+    // };
+    xobj.onload = function (e, ) {
+        successFN && successFN(e, xobj);
+    }
+    xobj.onerror = function (e) {
+        errorFN && errorFN(e, xobj);
+    }
     xobj.send(null);
 }

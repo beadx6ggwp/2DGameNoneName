@@ -37,7 +37,7 @@ window.onload = function () {
 }
 
 function initRenderObj(sc) {
-    let animGroup = ResManager.getResByName(FrameRes.TypeName, 'test1').data['mario'];
+    let anims = ResManager.getResByName(FrameRes.TypeName, 'test1').data['mario'];
 
     for (let i = 0; i < 10; i++) {
         let mr = sc.createRObj(Mario.ClassName, [{ name: 'mr' }]);
@@ -45,19 +45,19 @@ function initRenderObj(sc) {
         let sp = 100;
         let rand = random(0, 3);
         mr.setVel(rand * sp, 0);
-        mr.setAnimationGroup(animGroup, 'run');
+        mr.setAnims(anims, 'run');
         mr.animation.speed = rand;
         mr.rw = 64;
         mr.rh = 64;
     }
-    animGroup = ResManager.getResByName(FrameRes.TypeName, 'test1').data['ani1'];
+    anims = ResManager.getResByName(FrameRes.TypeName, 'test1').data['ani1'];
     for (let i = 0; i < 10; i++) {
         let mr = sc.createRObj(Mario.ClassName, [{ name: 'ani1' }]);
         mr.setPos(randomInt(20, 380), randomInt(20, 380));
         let sp = 100;
         let rand = random(0, 3);
         mr.setVel(rand * sp, 0);
-        mr.setAnimationGroup(animGroup, 'run');
+        mr.setAnims(anims, 'run');
         mr.animation.speed = rand;
         mr.rw = 34;
         mr.rh = 50;

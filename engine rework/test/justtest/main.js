@@ -11,7 +11,8 @@ window.onload = function () {
         afterRender: function () {
             var debugInfo = [
                 `predictFrame:${FrameState.predictFrame.toFixed(3)}`,
-                `currFrame:${FrameState.currFrame}`
+                `currFrame:${FrameState.currFrame}`,
+                `tickCount:${FrameState.tickCount}`
             ]
             document.getElementById('p1').innerHTML = debugInfo.join('<br>');
         }

@@ -53,7 +53,7 @@ class Frames {
     };
 }
 
-class AnimationGroup {
+class Animations {
     constructor() {
         this.anims = {};
     }
@@ -84,7 +84,7 @@ class Animation {
         config = config || {};
 
         // AnimationGroup
-        this.animGroup = null;
+        this.anims = null;
 
         // current Frames
         this.currFrames = null;
@@ -140,12 +140,12 @@ class Animation {
         this.accumulator = 0;
     }
 
-    setAnimGroup(animGroup, currAnimName) {
-        this.animGroup = animGroup;
+    setAnims(anims, currAnimName) {
+        this.anims = anims;
         this.setCurrFrames(currAnimName || 'def');
     }
     setCurrFrames(name) {
-        let frames = this.animGroup.get(name);
+        let frames = this.anims.get(name);
         // if frames change
         if (frames != this.currFrames) {
             this.currFrames = frames;

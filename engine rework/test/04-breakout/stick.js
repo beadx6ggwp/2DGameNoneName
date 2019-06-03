@@ -17,7 +17,7 @@ class Stick extends Sprite {
             }
         }
         if (Key.pressed('SPACE')) {
-
+            launchBall();
         }
         super.update(dt);
     }

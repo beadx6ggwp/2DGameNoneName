@@ -8,15 +8,28 @@ class Ball extends Sprite {
 
         this.actions.push(new ActionEvent('ballToBlockCollide', this, ['block', 'stick'],
             function (sender, target) {
-                let ball = sender, block = target;
-                if (rect2rect(ball, block)) {
-                    if (target.name == 'block') {
-                        ball.vel.y *= -1;
-                        ++block.hit;
+                let ball = sender;
+
+                if (target.name == 'block' && rect2rect(sender, target)) {
+                    let block = target;
+                    ball.vel.y *= -1;
+                    if (block.toHit()) {
+                        cfg.score += block.lev * 10;
+                        cfg.blockNum--;
                         block.canRemove = true;
                     }
-                    if (target.name == 'stick') {
+                    console.log(block.hit, block.lev);
+                }
+                if (target.name == 'stick') {
+                    let stick = target;
+                    if (rect2rect(sender, target)) {
                         ball.vel.y *= -1;
+                    }
+                    else {
+                        if (ball.pos.y + ball.r > stick.pos.y) {
+                            // cfg.life--;
+                            // resetGame();
+                        }
                     }
                 }
             }));
@@ -24,6 +37,9 @@ class Ball extends Sprite {
     update(dt) {
         let w = this.scene.w,
             h = this.scene.h;
+
+        if (state == 0) resetBall();
+
         if (this.pos.x - this.r < 0 && this.vel.x < 0 ||
             this.pos.x + this.r > w && this.vel.x > 0) {
             this.vel.x *= -1;

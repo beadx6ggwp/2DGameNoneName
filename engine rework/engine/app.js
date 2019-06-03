@@ -51,7 +51,7 @@ class Game {
 
             var scene = this.sceneManager.getCurrentScene();
             if (scene) {
-                scene.update(FrameState.deltaTime / 1000, this.tickcount);
+                scene.update(FrameState.deltaTime / 1000, FrameState.tickcount);
                 scene.render();
             }
 

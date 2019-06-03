@@ -34,8 +34,8 @@ function initRenderObj(sc) {
         runFrames.add(i * w, 0, w, h, img, 200);
     }
 
-    let animGroup = new AnimationGroup();
-    animGroup.add('run', runFrames);
+    let anims = new Animations();
+    anims.add('run', runFrames);
 
     for (let i = 0; i < 10; i++) {
         let mr = sc.createRObj(Mario.ClassName, [{ name: 'mr' }]);
@@ -43,7 +43,7 @@ function initRenderObj(sc) {
         let sp = 100;
         let rand = random(0, 3);
         mr.setVel(rand * sp, 0);
-        mr.setAnimationGroup(animGroup, 'run');
+        mr.setAnims(anims, 'run');
         mr.animation.speed = rand;
         mr.rw = 64;
         mr.rh = 64;

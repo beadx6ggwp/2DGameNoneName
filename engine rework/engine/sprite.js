@@ -2,7 +2,7 @@ class Sprite extends RenderObj {
     constructor(config) {
         super(config)
 
-        this.animGroup = null;
+        this.anims = null;
         this.animation = new Animation();
 
         // 是否水平垂直反向
@@ -14,9 +14,9 @@ class Sprite extends RenderObj {
         this.scaleY = 1;
     }
 
-    setAnimationGroup(animGroup, currAnimName) {
-        this.animGroup = animGroup;
-        this.animation.setAnimGroup(animGroup, currAnimName);
+    setAnims(anims, currAnimName) {
+        this.anims = anims;
+        this.animation.setAnims(anims, currAnimName);
     }
 
     update(dt) {

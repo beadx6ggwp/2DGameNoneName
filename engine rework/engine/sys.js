@@ -1,4 +1,5 @@
 var FrameState = {
+    tickCount: 0,
     //最大幀數
     maxFrame: 0,
     //最小幀數
@@ -22,6 +23,7 @@ var FrameState = {
         this.currTime = this.lastUpdate = window.performance.now();
         this.predictFrame = 60;
         this.framesThisSecond = 0;
+        this.tickCount = 0;
     },
     //每幀在遊戲循環前調用此方法，更新和計算幀數
     update: function () {
@@ -47,6 +49,7 @@ var FrameState = {
         }
         this.deltaTime = timestamp - this.currTime;
         this.currTime = timestamp;
+        this.tickCount++;
     }
 };
 

@@ -10,7 +10,7 @@
     "block": {
         "type": 1,
         "imgName": "block",
-        "frameWidth": 116,
+        "frameWidth": 250,
         "frameHeight": 58,
         "animations": {
             "s1": {
