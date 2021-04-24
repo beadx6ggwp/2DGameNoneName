@@ -35,7 +35,7 @@ function init() {
         render: draw
     }, gameConfig);
 
-    mapp = new TileMap2(world, asset.jsons.map_2)
+    mapp = new TileMap2(world, asset.jsons['untitled'])
 
     // map = new TileMap(world, Tilemap_Data[nowMap]);
     // map.addToRenderList(entities);
@@ -57,7 +57,7 @@ function init() {
 
     player = new Player({
         name: 'player',
-        pos: { x: randomInt(200, 400), y: randomInt(200, 400) },
+        pos: { x: 250, y: 400 },
         vel: { x: 0, y: 0 },
         acc: { x: 0, y: 0 },
         moveSpeed: 200,
@@ -159,8 +159,8 @@ function init() {
         defaultColor: 'rgba(127,255,255,0.5)'
     };
 
-    world.addGameObj(new Entity(actionBox1));
-    world.addGameObj(new Entity(actionBox2));
+    // world.addGameObj(new Entity(actionBox1));
+    // world.addGameObj(new Entity(actionBox2));
 
     main();
 }

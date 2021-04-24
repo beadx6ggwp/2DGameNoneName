@@ -1,0 +1,27 @@
+{
+    "ball": {
+        "type": 0,
+        "imgName": "ball"
+    },
+    "stick": {
+        "type": 0,
+        "imgName": "stick"
+    },
+    "block": {
+        "type": 1,
+        "imgName": "block",
+        "frameWidth": 250,
+        "frameHeight": 58,
+        "animations": {
+            "s1": {
+                "sequence": "1"
+            },
+            "s2": {
+                "sequence": "2"
+            },
+            "s3": {
+                "sequence": "4"
+            }
+        }
+    }
+}

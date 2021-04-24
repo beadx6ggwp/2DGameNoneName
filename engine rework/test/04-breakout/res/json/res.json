@@ -1,0 +1,22 @@
+{
+    "image": [
+        {
+            "name": "ball",
+            "src": "res/img/ball.png"
+        },
+        {
+            "name": "block",
+            "src": "res/img/block.png"
+        },
+        {
+            "name": "stick",
+            "src": "res/img/stick.png"
+        }
+    ],
+    "frame": [
+        {
+            "name": "sprite",
+            "src": "res/json/sprite.json"
+        }
+    ]
+}

@@ -19,9 +19,8 @@ class Game {
         this.started = false;
         this.running = false;
         this.rafID = null;
-
-        this.updateStep = GetValue(config, 'updateStep', 120);
-        this.stepTime = 1 / this.updateStep;
+        
+        this.tickcount = 0;
     }
 
     addListener(ln) {
@@ -31,28 +30,41 @@ class Game {
         this.listeners.length = 0;
     }
 
-    mainloop(timestamp) {
-        FrameState.update();
-        if (this.running) {
-            this.beforeRender();
-
-
-            this.afterRender();
-        };
-        this.rafID = requestAnimationFrame(this.mainloop.bind(this));
-    }
-
     beforeRender() {
         for (const ln of this.listeners) {
-            if (ln.enabled) ln.onBeforeRender();
+            ln.enabled && ln.onBeforeRender();
         }
     }
     afterRender() {
         for (const ln of this.listeners) {
-            if (ln.enabled) ln.onAfterRender();
+            ln.enabled && ln.onAfterRender();
         }
     }
 
+    mainloop(timestamp) {
+        FrameState.update();
+        FPStats.begin();
+
+        if (this.running) {
+            this.tickcount++;
+            this.beforeRender();
+
+            var scene = this.sceneManager.getCurrentScene();
+            if (scene) {
+                scene.update(FrameState.deltaTime / 1000, FrameState.tickcount);
+                scene.render();
+            }
+
+            this.afterRender();
+        };
+        FPStats.end();
+        this.rafID = requestAnimationFrame(this.mainloop.bind(this));
+    }
+
+    reset() {
+        // reset timestamp
+        this.lastTime = window.performance.now();
+    }
     run() {
         if (this.started) {
             console.log('Loop is stared');
@@ -60,12 +72,14 @@ class Game {
         }
         this.started = true;
         this.running = true;
+        this.reset();
 
         FrameState.start();
         this.rafID = requestAnimationFrame(this.mainloop.bind(this));
     }
 
     pause() {
+        if (!this.running) this.reset();
         this.running = !this.running;
     }
 

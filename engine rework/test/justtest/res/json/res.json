@@ -1,0 +1,22 @@
+{
+    "image": [
+        {
+            "name": "mario",
+            "src": "res/img/mr.png"
+        },
+        {
+            "name": "ani1",
+            "src": "res/img/ani1.png"
+        },
+        {
+            "name":"bg1",
+            "src":"https://i.imgur.com/2ucWbfe.jpg"
+        }
+    ],
+    "frame": [
+        {
+            "name": "test1",
+            "src": "res/json/test1.json"
+        }
+    ]
+}
