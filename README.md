@@ -10,7 +10,7 @@ https://davidhsu666.com/archives/2dgame-nonename/
 
 ```
 npm install http-server
-http-server
+http-server ./path
 ```
 
 ## 未來期望
